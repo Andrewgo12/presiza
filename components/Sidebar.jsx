@@ -18,6 +18,7 @@ import {
   LogOut,
   X,
   ChevronDown,
+  Activity,
   ChevronRight,
 } from "lucide-react"
 
@@ -68,6 +69,7 @@ const Sidebar = ({ isOpen, onClose }) => {
         { id: "tasks", label: "Task Management", icon: CheckSquare, path: "/admin/tasks" },
         { id: "analytics", label: "Analytics", icon: BarChart3, path: "/admin/analytics" },
         { id: "admin-groups", label: "Group Management", icon: Users, path: "/admin/groups" },
+        { id: "admin-logs", label: "System Logs", icon: Activity, path: "/admin/logs" },
         { id: "settings", label: "System Settings", icon: Settings, path: "/settings" },
       ],
     },
@@ -137,10 +139,9 @@ const Sidebar = ({ isOpen, onClose }) => {
           w-full flex items-center px-4 py-3 text-left rounded-lg
           transition-all duration-200 group
           ${level > 0 ? "ml-4" : ""}
-          ${
-            isActive
-              ? "bg-blue-100 text-blue-700 border-r-2 border-blue-500"
-              : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+          ${isActive
+            ? "bg-blue-100 text-blue-700 border-r-2 border-blue-500"
+            : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
           }
         `}
       >

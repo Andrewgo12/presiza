@@ -5,6 +5,10 @@
 const express = require('express');
 const { AppError, asyncHandler } = require('../middleware/errorHandler');
 
+// Import database status and fallback data
+const { getDatabaseStatus } = require('../config/database');
+const { getFallbackNotifications, getUserById } = require('../utils/fallbackData');
+
 const router = express.Router();
 
 // Mock data para notificaciones
@@ -34,7 +38,56 @@ const mockNotifications = [
  * Obtener notificaciones del usuario
  */
 router.get('/', asyncHandler(async (req, res) => {
-  const { page = 1, limit = 20, unreadOnly = false } = req.query;
+  const { page = 1, limit = 20, unreadOnly = false, type, category } = req.query;
+
+  // FALLBACK: Si MongoDB no está disponible, usar datos hardcodeados
+  const dbStatus = getDatabaseStatus();
+
+  if (!dbStatus.mongodb.connected) {
+    let fallbackNotifications = getFallbackNotifications();
+
+    // Filtrar notificaciones del usuario actual
+    fallbackNotifications = fallbackNotifications.filter(notification =>
+      notification.recipient === req.user._id
+    );
+
+    // Aplicar filtros
+    if (unreadOnly === 'true') {
+      fallbackNotifications = fallbackNotifications.filter(notification => !notification.isRead);
+    }
+
+    if (type) {
+      fallbackNotifications = fallbackNotifications.filter(notification => notification.type === type);
+    }
+
+    if (category) {
+      fallbackNotifications = fallbackNotifications.filter(notification => notification.category === category);
+    }
+
+    // Ordenar por fecha de creación (más recientes primero)
+    fallbackNotifications.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+    // Aplicar paginación
+    const startIndex = (page - 1) * limit;
+    const endIndex = startIndex + parseInt(limit);
+    const paginatedNotifications = fallbackNotifications.slice(startIndex, endIndex);
+
+    // Calcular notificaciones no leídas
+    const unreadCount = fallbackNotifications.filter(n => !n.isRead).length;
+
+    return res.json({
+      notifications: paginatedNotifications,
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total: fallbackNotifications.length,
+        pages: Math.ceil(fallbackNotifications.length / limit)
+      },
+      unreadCount,
+      filters: { unreadOnly, type, category },
+      mode: 'development'
+    });
+  }
 
   let notifications = mockNotifications;
 

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { useAuth } from "../context/AuthContext"
 import Header from "../components/Header"
 import Sidebar from "../components/Sidebar"
+import { filesAPI } from "../services/api"
 import {
   Search,
   Download,
@@ -28,126 +29,133 @@ const FilesView = () => {
   const [activeTab, setActiveTab] = useState("all")
   const [viewMode, setViewMode] = useState("grid")
   const [sortBy, setSortBy] = useState("date")
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [pagination, setPagination] = useState({ page: 1, limit: 20, total: 0 })
 
   useEffect(() => {
-    // Load mock files data
-    const mockFiles = [
-      {
-        id: 1,
-        name: "Research_Report_2024.pdf",
-        type: "application/pdf",
-        size: 2048576,
-        author: "Dr. Smith",
-        authorId: 1,
-        uploadDate: "2024-01-15T10:30:00Z",
-        group: "Research Team Alpha",
-        groupId: 1,
-        category: "documents",
-        status: "approved",
-        downloads: 45,
-        likes: 12,
-        comments: 3,
-        tags: ["research", "analysis", "2024"],
-        thumbnail: "/placeholder.svg?height=120&width=120",
-      },
-      {
-        id: 2,
-        name: "Project_Screenshots.zip",
-        type: "application/zip",
-        size: 15728640,
-        author: "John Doe",
-        authorId: 2,
-        uploadDate: "2024-01-14T14:20:00Z",
-        group: "Development Squad",
-        groupId: 2,
-        category: "archives",
-        status: "pending",
-        downloads: 8,
-        likes: 5,
-        comments: 1,
-        tags: ["screenshots", "project", "ui"],
-        thumbnail: "/placeholder.svg?height=120&width=120",
-      },
-      {
-        id: 3,
-        name: "Demo_Video.mp4",
-        type: "video/mp4",
-        size: 52428800,
-        author: "Jane Wilson",
-        authorId: 3,
-        uploadDate: "2024-01-13T09:15:00Z",
-        group: "Data Analytics Hub",
-        groupId: 3,
-        category: "videos",
-        status: "approved",
-        downloads: 23,
-        likes: 18,
-        comments: 7,
-        tags: ["demo", "tutorial", "analytics"],
-        thumbnail: "/placeholder.svg?height=120&width=120",
-      },
-      {
-        id: 4,
-        name: "UI_Mockups.png",
-        type: "image/png",
-        size: 1048576,
-        author: "Mike Chen",
-        authorId: 4,
-        uploadDate: "2024-01-12T16:45:00Z",
-        group: "Design Collective",
-        groupId: 4,
-        category: "images",
-        status: "approved",
-        downloads: 31,
-        likes: 24,
-        comments: 9,
-        tags: ["ui", "mockup", "design"],
-        thumbnail: "/placeholder.svg?height=120&width=120",
-      },
-    ]
+    const loadFiles = async () => {
+      try {
+        setLoading(true)
+        setError(null)
 
-    setFiles(mockFiles)
-    setFilteredFiles(mockFiles)
-  }, [])
+        const params = {
+          page: pagination.page,
+          limit: pagination.limit,
+          sortBy: sortBy === 'date' ? 'createdAt' : sortBy,
+          sortOrder: 'desc'
+        }
 
-  useEffect(() => {
-    let filtered = files
+        if (activeTab !== 'all') {
+          params.category = activeTab
+        }
 
-    // Filter by category/tab
-    if (activeTab !== "all") {
-      filtered = filtered.filter((file) => file.category === activeTab)
-    }
+        if (searchTerm) {
+          params.search = searchTerm
+        }
 
-    // Filter by search term
-    if (searchTerm) {
-      filtered = filtered.filter(
-        (file) =>
-          file.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          file.author.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          file.group.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          file.tags.some((tag) => tag.toLowerCase().includes(searchTerm.toLowerCase())),
-      )
-    }
+        const response = await filesAPI.getFiles(params)
 
-    // Sort files
-    filtered.sort((a, b) => {
-      switch (sortBy) {
-        case "name":
-          return a.name.localeCompare(b.name)
-        case "size":
-          return b.size - a.size
-        case "downloads":
-          return b.downloads - a.downloads
-        case "likes":
-          return b.likes - a.likes
-        case "date":
-        default:
-          return new Date(b.uploadDate) - new Date(a.uploadDate)
+        setFiles(response.files || [])
+        setFilteredFiles(response.files || [])
+        setPagination(response.pagination || { page: 1, limit: 20, total: 0 })
+
+      } catch (err) {
+        console.error('Error loading files:', err)
+        setError('Error cargando archivos')
+        setFiles([])
+        setFilteredFiles([])
+      } finally {
+        setLoading(false)
       }
-    })
+    }
 
-    setFilteredFiles(filtered)
-  }, [searchTerm, activeTab, sortBy, files])
+    loadFiles()
+  }, [pagination.page, pagination.limit, sortBy, activeTab, searchTerm])
+
+  // Función para manejar descarga de archivos
+  const handleDownload = async (file) => {
+    try {
+      const downloadUrl = filesAPI.getDownloadUrl(file.filename)
+      window.open(downloadUrl, '_blank')
+    } catch (err) {
+      console.error('Error downloading file:', err)
+      setError('Error descargando archivo')
+    }
+  }
+
+  // Función para eliminar archivo
+  const handleDelete = async (fileId) => {
+    if (!window.confirm('¿Estás seguro de que quieres eliminar este archivo?')) {
+      return
+    }
+
+    try {
+      await filesAPI.deleteFile(fileId)
+      // Recargar la lista de archivos
+      const updatedFiles = files.filter(f => f._id !== fileId)
+      setFiles(updatedFiles)
+      setFilteredFiles(updatedFiles)
+    } catch (err) {
+      console.error('Error deleting file:', err)
+      setError('Error eliminando archivo')
+    }
+  }
+
+  // Función para actualizar archivo
+  const handleUpdate = async (fileId, updateData) => {
+    try {
+      const updatedFile = await filesAPI.updateFile(fileId, updateData)
+      const updatedFiles = files.map(f => f._id === fileId ? updatedFile.file : f)
+      setFiles(updatedFiles)
+      setFilteredFiles(updatedFiles)
+    } catch (err) {
+      console.error('Error updating file:', err)
+      setError('Error actualizando archivo')
+    }
+  }
+
+  // Función para cambiar página
+  const handlePageChange = (newPage) => {
+    setPagination(prev => ({ ...prev, page: newPage }))
+  }
+
+  // Función para cambiar filtros
+  const handleFilterChange = (newTab) => {
+    setActiveTab(newTab)
+    setPagination(prev => ({ ...prev, page: 1 })) // Reset a primera página
+  }
+
+  // Función para cambiar búsqueda
+  const handleSearchChange = (newSearchTerm) => {
+    setSearchTerm(newSearchTerm)
+    setPagination(prev => ({ ...prev, page: 1 })) // Reset a primera página
+  }
+
+  // Si hay error, mostrar mensaje
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
+        <div className="flex">
+          <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+          <main className="flex-1 p-6">
+            <div className="text-center py-12">
+              <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Error cargando archivos</h3>
+              <p className="text-gray-500 mb-4">{error}</p>
+              <button
+                onClick={() => window.location.reload()}
+                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+              >
+                Reintentar
+              </button>
+            </div>
+          </main>
+        </div>
+      </div>
+    )
+  }
 
   const formatFileSize = (bytes) => {
     if (bytes === 0) return "0 Bytes"
@@ -193,11 +201,7 @@ const FilesView = () => {
     }
   }
 
-  const handleDownload = (file) => {
-    // Simulate file download
-    console.log(`Downloading ${file.name}`)
-    setFiles((prev) => prev.map((f) => (f.id === file.id ? { ...f, downloads: f.downloads + 1 } : f)))
-  }
+
 
   const handleLike = (fileId) => {
     setFiles((prev) => prev.map((f) => (f.id === fileId ? { ...f, likes: f.likes + 1 } : f)))
@@ -385,11 +389,10 @@ const FilesView = () => {
                     <button
                       key={tab.id}
                       onClick={() => setActiveTab(tab.id)}
-                      className={`flex items-center py-2 px-1 border-b-2 font-medium text-sm ${
-                        activeTab === tab.id
-                          ? "border-blue-500 text-blue-600"
-                          : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                      }`}
+                      className={`flex items-center py-2 px-1 border-b-2 font-medium text-sm ${activeTab === tab.id
+                        ? "border-blue-500 text-blue-600"
+                        : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                        }`}
                     >
                       <TabIcon className="w-4 h-4 mr-2" />
                       {tab.label}

@@ -13,38 +13,91 @@ const authenticateToken = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
     const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
-    
+
     if (!token) {
       return res.status(401).json({
         error: 'Token de acceso requerido',
         code: 'NO_TOKEN'
       });
     }
-    
+
     // Verificar token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    
-    // Buscar usuario
+
+    // FALLBACK: Si MongoDB no está disponible, usar datos del token
+    const { getDatabaseStatus } = require('../config/database');
+    const dbStatus = getDatabaseStatus();
+
+    if (!dbStatus.mongodb.connected) {
+      // En modo desarrollo, crear usuario desde el token
+      const devUsers = [
+        {
+          _id: '507f1f77bcf86cd799439011',
+          email: 'admin@test.com',
+          firstName: 'Admin',
+          lastName: 'User',
+          role: 'admin',
+          department: 'IT',
+          position: 'System Administrator',
+          isActive: true
+        },
+        {
+          _id: '507f1f77bcf86cd799439012',
+          email: 'user@test.com',
+          firstName: 'Test',
+          lastName: 'User',
+          role: 'user',
+          department: 'General',
+          position: 'User',
+          isActive: true
+        }
+      ];
+
+      const user = devUsers.find(u => u._id === decoded.userId);
+
+      if (!user) {
+        return res.status(401).json({
+          error: 'Token inválido - usuario no encontrado',
+          code: 'INVALID_TOKEN'
+        });
+      }
+
+      if (!user.isActive) {
+        return res.status(401).json({
+          error: 'Cuenta desactivada',
+          code: 'ACCOUNT_DISABLED'
+        });
+      }
+
+      // Agregar usuario a la request
+      req.user = user;
+      req.token = token;
+      req.devMode = true;
+
+      return next();
+    }
+
+    // Buscar usuario en MongoDB (cuando esté disponible)
     const user = await User.findById(decoded.userId).select('-password');
-    
+
     if (!user) {
       return res.status(401).json({
         error: 'Token inválido - usuario no encontrado',
         code: 'INVALID_TOKEN'
       });
     }
-    
+
     if (!user.isActive) {
       return res.status(401).json({
         error: 'Cuenta desactivada',
         code: 'ACCOUNT_DISABLED'
       });
     }
-    
+
     // Agregar usuario a la request
     req.user = user;
     req.token = token;
-    
+
     next();
   } catch (error) {
     if (error.name === 'JsonWebTokenError') {
@@ -53,14 +106,14 @@ const authenticateToken = async (req, res, next) => {
         code: 'INVALID_TOKEN'
       });
     }
-    
+
     if (error.name === 'TokenExpiredError') {
       return res.status(401).json({
         error: 'Token expirado',
         code: 'TOKEN_EXPIRED'
       });
     }
-    
+
     console.error('Error en autenticación:', error);
     res.status(500).json({
       error: 'Error interno del servidor',
@@ -80,7 +133,7 @@ const requireRole = (...roles) => {
         code: 'AUTHENTICATION_REQUIRED'
       });
     }
-    
+
     if (!roles.includes(req.user.role)) {
       return res.status(403).json({
         error: 'Permisos insuficientes',
@@ -89,7 +142,7 @@ const requireRole = (...roles) => {
         current: req.user.role
       });
     }
-    
+
     next();
   };
 };
@@ -109,18 +162,18 @@ const requireAdminOrSelf = (req, res, next) => {
       code: 'AUTHENTICATION_REQUIRED'
     });
   }
-  
+
   const targetUserId = req.params.userId || req.params.id;
   const isAdmin = req.user.role === 'admin';
   const isSelf = req.user._id.toString() === targetUserId;
-  
+
   if (!isAdmin && !isSelf) {
     return res.status(403).json({
       error: 'Solo puedes acceder a tu propia información o ser administrador',
       code: 'INSUFFICIENT_PERMISSIONS'
     });
   }
-  
+
   next();
 };
 
@@ -131,17 +184,17 @@ const optionalAuth = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
     const token = authHeader && authHeader.split(' ')[1];
-    
+
     if (token) {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       const user = await User.findById(decoded.userId).select('-password');
-      
+
       if (user && user.isActive) {
         req.user = user;
         req.token = token;
       }
     }
-    
+
     next();
   } catch (error) {
     // En autenticación opcional, continuamos sin usuario
@@ -157,23 +210,23 @@ const requireGroupPermission = (permission) => {
     try {
       const Group = require('../models/Group');
       const groupId = req.params.groupId || req.body.groupId;
-      
+
       if (!groupId) {
         return res.status(400).json({
           error: 'ID de grupo requerido',
           code: 'GROUP_ID_REQUIRED'
         });
       }
-      
+
       const group = await Group.findById(groupId);
-      
+
       if (!group) {
         return res.status(404).json({
           error: 'Grupo no encontrado',
           code: 'GROUP_NOT_FOUND'
         });
       }
-      
+
       // Verificar si el usuario es miembro del grupo
       if (!group.isMember(req.user._id)) {
         return res.status(403).json({
@@ -181,7 +234,7 @@ const requireGroupPermission = (permission) => {
           code: 'NOT_GROUP_MEMBER'
         });
       }
-      
+
       // Verificar permisos específicos
       if (!group.hasPermission(req.user._id, permission)) {
         return res.status(403).json({
@@ -189,7 +242,7 @@ const requireGroupPermission = (permission) => {
           code: 'INSUFFICIENT_GROUP_PERMISSIONS'
         });
       }
-      
+
       req.group = group;
       next();
     } catch (error) {
@@ -210,17 +263,17 @@ const requireOwnership = (Model, paramName = 'id') => {
     try {
       const resourceId = req.params[paramName];
       const resource = await Model.findById(resourceId);
-      
+
       if (!resource) {
         return res.status(404).json({
           error: 'Recurso no encontrado',
           code: 'RESOURCE_NOT_FOUND'
         });
       }
-      
+
       // Verificar propiedad (campo uploadedBy, createdBy, etc.)
       const ownerField = resource.uploadedBy || resource.createdBy || resource.userId;
-      
+
       if (!ownerField || ownerField.toString() !== req.user._id.toString()) {
         // Los admins pueden acceder a cualquier recurso
         if (req.user.role !== 'admin') {
@@ -230,7 +283,7 @@ const requireOwnership = (Model, paramName = 'id') => {
           });
         }
       }
-      
+
       req.resource = resource;
       next();
     } catch (error) {
@@ -252,13 +305,13 @@ const generateTokens = (userId) => {
     process.env.JWT_SECRET,
     { expiresIn: process.env.JWT_EXPIRE || '24h' }
   );
-  
+
   const refreshToken = jwt.sign(
     { userId },
     process.env.JWT_REFRESH_SECRET,
     { expiresIn: process.env.JWT_REFRESH_EXPIRE || '7d' }
   );
-  
+
   return { accessToken, refreshToken };
 };
 

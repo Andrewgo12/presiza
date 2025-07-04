@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { useAuth } from "../context/AuthContext"
 import Header from "../components/Header"
 import Sidebar from "../components/Sidebar"
+import { evidencesAPI, filesAPI } from "../services/api"
 import {
   Search,
   Filter,
@@ -29,137 +30,117 @@ const EvidencesView = () => {
   const [selectedEvidence, setSelectedEvidence] = useState(null)
   const [showDetailModal, setShowDetailModal] = useState(false)
   const [comments, setComments] = useState({})
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [pagination, setPagination] = useState({ page: 1, limit: 20, total: 0 })
 
   useEffect(() => {
-    // Load mock evidences data
-    const mockEvidences = [
-      {
-        id: 1,
-        title: "Q4 Research Analysis Report",
-        description: "Comprehensive analysis of research data collected during Q4 2023",
-        fileName: "Q4_Research_Analysis.pdf",
-        fileSize: 2048576,
-        author: "Dr. Smith",
-        authorId: 1,
-        submissionDate: "2024-01-15T10:30:00Z",
-        project: "AI Research Initiative",
-        evidenceType: "document",
-        status: "approved",
-        rating: 4.5,
-        tags: ["research", "analysis", "Q4", "data"],
-        group: "Research Team Alpha",
-        groupId: 1,
-        reviewedBy: "Admin User",
-        reviewDate: "2024-01-16T14:20:00Z",
-        feedback: "Excellent work! The analysis is thorough and well-documented.",
-        version: 1,
-      },
-      {
-        id: 2,
-        title: "User Interface Mockups",
-        description: "Initial UI/UX designs for the new dashboard interface",
-        fileName: "Dashboard_Mockups.figma",
-        fileSize: 5242880,
-        author: "Jane Wilson",
-        authorId: 3,
-        submissionDate: "2024-01-14T16:45:00Z",
-        project: "Dashboard Redesign",
-        evidenceType: "design",
-        status: "under_review",
-        rating: null,
-        tags: ["ui", "ux", "mockup", "dashboard"],
-        group: "Design Collective",
-        groupId: 4,
-        reviewedBy: null,
-        reviewDate: null,
-        feedback: null,
-        version: 2,
-      },
-      {
-        id: 3,
-        title: "Database Migration Script",
-        description: "SQL scripts for migrating user data to new schema",
-        fileName: "migration_v2.sql",
-        fileSize: 102400,
-        author: "John Doe",
-        authorId: 2,
-        submissionDate: "2024-01-13T09:15:00Z",
-        project: "System Upgrade",
-        evidenceType: "code",
-        status: "rejected",
-        rating: 2,
-        tags: ["sql", "migration", "database"],
-        group: "Development Squad",
-        groupId: 2,
-        reviewedBy: "Admin User",
-        reviewDate: "2024-01-14T11:30:00Z",
-        feedback: "Script needs optimization. Please review the indexing strategy and add error handling.",
-        version: 1,
-      },
-    ]
+    const loadEvidences = async () => {
+      try {
+        setLoading(true)
+        setError(null)
 
-    setEvidences(mockEvidences)
-    setFilteredEvidences(mockEvidences)
+        const params = {
+          page: pagination.page,
+          limit: pagination.limit
+        }
 
-    // Load mock comments
-    const mockComments = {
-      1: [
-        {
-          id: 1,
-          author: "Mike Chen",
-          authorId: 4,
-          content: "Great analysis! The methodology section is particularly well done.",
-          timestamp: "2024-01-16T15:30:00Z",
-        },
-        {
-          id: 2,
-          author: "Sarah Johnson",
-          authorId: 5,
-          content: "Could you elaborate on the statistical significance of the findings?",
-          timestamp: "2024-01-17T09:15:00Z",
-        },
-      ],
-      2: [
-        {
-          id: 3,
-          author: "Admin User",
-          authorId: 1,
-          content: "The color scheme looks good, but consider accessibility guidelines for contrast ratios.",
-          timestamp: "2024-01-15T14:20:00Z",
-        },
-      ],
+        if (statusFilter !== 'all') {
+          params.status = statusFilter
+        }
+
+        if (searchTerm) {
+          params.search = searchTerm
+        }
+
+        const response = await evidencesAPI.getEvidences(params)
+
+        setEvidences(response.evidences || [])
+        setFilteredEvidences(response.evidences || [])
+        setPagination(response.pagination || { page: 1, limit: 20, total: 0 })
+
+      } catch (err) {
+        console.error('Error loading evidences:', err)
+        setError('Error cargando evidencias')
+        // Fallback to empty data
+        setEvidences([])
+        setFilteredEvidences([])
+      } finally {
+        setLoading(false)
+      }
     }
 
-    setComments(mockComments)
-  }, [])
+    loadEvidences()
+  }, [pagination.page, pagination.limit, statusFilter, searchTerm])
 
-  useEffect(() => {
-    let filtered = evidences
-
-    // Filter by search term
-    if (searchTerm) {
-      filtered = filtered.filter(
-        (evidence) =>
-          evidence.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          evidence.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          evidence.author.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          evidence.project.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          evidence.tags.some((tag) => tag.toLowerCase().includes(searchTerm.toLowerCase())),
+  // Function to approve evidence
+  const handleApprove = async (evidenceId) => {
+    try {
+      await evidencesAPI.updateEvidence(evidenceId, { status: 'approved' })
+      const updatedEvidences = evidences.map(e =>
+        e._id === evidenceId ? { ...e, status: 'approved' } : e
       )
+      setEvidences(updatedEvidences)
+      setFilteredEvidences(updatedEvidences)
+    } catch (err) {
+      console.error('Error approving evidence:', err)
+      setError('Error aprobando evidencia')
     }
+  }
 
-    // Filter by status
-    if (statusFilter !== "all") {
-      filtered = filtered.filter((evidence) => evidence.status === statusFilter)
+  // Function to reject evidence
+  const handleReject = async (evidenceId, feedback) => {
+    try {
+      await evidencesAPI.updateEvidence(evidenceId, {
+        status: 'rejected',
+        feedback: feedback
+      })
+      const updatedEvidences = evidences.map(e =>
+        e._id === evidenceId ? { ...e, status: 'rejected', feedback } : e
+      )
+      setEvidences(updatedEvidences)
+      setFilteredEvidences(updatedEvidences)
+    } catch (err) {
+      console.error('Error rejecting evidence:', err)
+      setError('Error rechazando evidencia')
     }
+  }
 
-    // If not admin, only show user's own evidences
-    if (!isAdmin) {
-      filtered = filtered.filter((evidence) => evidence.authorId === user.id)
+  // Function to add comment
+  const handleAddComment = async (evidenceId, comment) => {
+    try {
+      await evidencesAPI.addComment(evidenceId, comment)
+      // Reload evidence details or update local state
+    } catch (err) {
+      console.error('Error adding comment:', err)
+      setError('Error agregando comentario')
     }
+  }
 
-    setFilteredEvidences(filtered)
-  }, [searchTerm, statusFilter, evidences, isAdmin, user.id])
+  // If there's an error, show error message
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
+        <div className="flex">
+          <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+          <main className="flex-1 p-6">
+            <div className="text-center py-12">
+              <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Error cargando evidencias</h3>
+              <p className="text-gray-500 mb-4">{error}</p>
+              <button
+                onClick={() => window.location.reload()}
+                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+              >
+                Reintentar
+              </button>
+            </div>
+          </main>
+        </div>
+      </div>
+    )
+  }
 
   const getStatusIcon = (status) => {
     switch (status) {
@@ -177,13 +158,13 @@ const EvidencesView = () => {
   const getStatusColor = (status) => {
     switch (status) {
       case "approved":
-        return "text-green-600 bg-green-100"
+        return "bg-green-100 text-green-800"
       case "rejected":
-        return "text-red-600 bg-red-100"
+        return "bg-red-100 text-red-800"
       case "under_review":
-        return "text-yellow-600 bg-yellow-100"
+        return "bg-yellow-100 text-yellow-800"
       default:
-        return "text-gray-600 bg-gray-100"
+        return "bg-gray-100 text-gray-800"
     }
   }
 
@@ -215,13 +196,13 @@ const EvidencesView = () => {
       prev.map((evidence) =>
         evidence.id === evidenceId
           ? {
-              ...evidence,
-              status: newStatus,
-              rating,
-              feedback,
-              reviewedBy: user.name,
-              reviewDate: new Date().toISOString(),
-            }
+            ...evidence,
+            status: newStatus,
+            rating,
+            feedback,
+            reviewedBy: user.name,
+            reviewDate: new Date().toISOString(),
+          }
           : evidence,
       ),
     )
@@ -410,9 +391,8 @@ const EvidencesView = () => {
                         <button
                           key={star}
                           onClick={() => setReviewData((prev) => ({ ...prev, rating: star }))}
-                          className={`p-1 ${
-                            star <= reviewData.rating ? "text-yellow-400" : "text-gray-300 hover:text-yellow-400"
-                          }`}
+                          className={`p-1 ${star <= reviewData.rating ? "text-yellow-400" : "text-gray-300 hover:text-yellow-400"
+                            }`}
                         >
                           <Star className="w-6 h-6 fill-current" />
                         </button>

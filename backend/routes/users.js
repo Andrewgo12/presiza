@@ -72,6 +72,61 @@ router.get('/', requireAdmin, asyncHandler(async (req, res) => {
  * Obtener usuario específico
  */
 router.get('/:id', requireAdminOrSelf, asyncHandler(async (req, res) => {
+  // FALLBACK: Si MongoDB no está disponible, usar datos hardcodeados
+  const { getDatabaseStatus } = require('../config/database');
+  const dbStatus = getDatabaseStatus();
+
+  if (!dbStatus.mongodb.connected) {
+    const devUsers = [
+      {
+        _id: '507f1f77bcf86cd799439011',
+        email: 'admin@test.com',
+        firstName: 'Admin',
+        lastName: 'User',
+        role: 'admin',
+        department: 'IT',
+        position: 'System Administrator',
+        isActive: true,
+        createdAt: new Date('2024-01-01'),
+        lastLogin: new Date()
+      },
+      {
+        _id: '507f1f77bcf86cd799439012',
+        email: 'user@test.com',
+        firstName: 'Test',
+        lastName: 'User',
+        role: 'user',
+        department: 'General',
+        position: 'User',
+        isActive: true,
+        createdAt: new Date('2024-01-01'),
+        lastLogin: new Date()
+      }
+    ];
+
+    const user = devUsers.find(u => u._id === req.params.id);
+
+    if (!user) {
+      throw new AppError('Usuario no encontrado', 404, 'USER_NOT_FOUND');
+    }
+
+    return res.json({
+      user: {
+        id: user._id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        role: user.role,
+        department: user.department,
+        position: user.position,
+        isActive: user.isActive,
+        createdAt: user.createdAt,
+        lastLogin: user.lastLogin
+      },
+      mode: 'development'
+    });
+  }
+
   const user = await User.findById(req.params.id).select('-password');
 
   if (!user) {
@@ -303,8 +358,8 @@ router.get('/search', asyncHandler(async (req, res) => {
       { email: { $regex: q, $options: 'i' } }
     ]
   })
-  .select('firstName lastName email avatar role department')
-  .limit(parseInt(limit));
+    .select('firstName lastName email avatar role department')
+    .limit(parseInt(limit));
 
   res.json({ users });
 }));

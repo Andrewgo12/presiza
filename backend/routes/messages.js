@@ -6,6 +6,10 @@ const express = require('express');
 const { body, validationResult } = require('express-validator');
 const { AppError, asyncHandler } = require('../middleware/errorHandler');
 
+// Import database status and fallback data
+const { getDatabaseStatus } = require('../config/database');
+const { getFallbackMessages, getFallbackUsers, getUserById } = require('../utils/fallbackData');
+
 const router = express.Router();
 
 // Mock data para mensajes (será reemplazado con modelo real)
@@ -33,7 +37,64 @@ const mockMessages = [
  * Obtener mensajes del usuario
  */
 router.get('/', asyncHandler(async (req, res) => {
-  const { page = 1, limit = 20 } = req.query;
+  const { page = 1, limit = 20, search, groupId, recipientType } = req.query;
+
+  // FALLBACK: Si MongoDB no está disponible, usar datos hardcodeados
+  const dbStatus = getDatabaseStatus();
+
+  if (!dbStatus.mongodb.connected) {
+    let fallbackMessages = getFallbackMessages();
+
+    // Filtrar mensajes donde el usuario es participante
+    fallbackMessages = fallbackMessages.filter(message =>
+      message.sender === req.user._id ||
+      message.recipient === req.user._id ||
+      (message.recipientType === 'Group' && groupId && message.recipient === groupId)
+    );
+
+    // Aplicar filtros de búsqueda
+    if (search) {
+      const searchRegex = new RegExp(search, 'i');
+      fallbackMessages = fallbackMessages.filter(message =>
+        searchRegex.test(message.content)
+      );
+    }
+
+    if (recipientType) {
+      fallbackMessages = fallbackMessages.filter(message =>
+        message.recipientType === recipientType
+      );
+    }
+
+    // Ordenar por fecha de creación (más recientes primero)
+    fallbackMessages.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+    // Aplicar paginación
+    const startIndex = (page - 1) * limit;
+    const endIndex = startIndex + parseInt(limit);
+    const paginatedMessages = fallbackMessages.slice(startIndex, endIndex);
+
+    // Enriquecer con información de usuarios
+    const enrichedMessages = paginatedMessages.map(message => ({
+      ...message,
+      sender: getUserById(message.sender),
+      recipient: message.recipientType === 'User' ? getUserById(message.recipient) : {
+        _id: message.recipient,
+        name: message.recipient === '507f1f77bcf86cd799439040' ? 'Research Team Alpha' : 'Group'
+      }
+    }));
+
+    return res.json({
+      messages: enrichedMessages,
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total: fallbackMessages.length,
+        pages: Math.ceil(fallbackMessages.length / limit)
+      },
+      mode: 'development'
+    });
+  }
 
   // Por ahora retornamos mock data
   res.json({

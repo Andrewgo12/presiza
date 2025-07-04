@@ -4,6 +4,7 @@ import { useState, useCallback } from "react"
 import { useAuth } from "../context/AuthContext"
 import Header from "../components/Header"
 import Sidebar from "../components/Sidebar"
+import { filesAPI, evidencesAPI } from "../services/api"
 import { Upload, X, File, ImageIcon, Video, FileText, Archive } from "lucide-react"
 
 const UploadView = () => {
@@ -126,42 +127,63 @@ const UploadView = () => {
     e.preventDefault()
 
     if (files.length === 0) {
-      alert("Please select at least one file to upload")
+      alert("Por favor selecciona al menos un archivo para subir")
       return
     }
 
     const hasErrors = files.some((f) => f.errors.length > 0)
     if (hasErrors) {
-      alert("Please fix file errors before uploading")
+      alert("Por favor corrige los errores de archivos antes de subir")
       return
     }
 
     setUploading(true)
 
     try {
-      // Simulate upload process
+      // Upload each file
+      const uploadedFiles = []
+
       for (let i = 0; i < files.length; i++) {
-        await new Promise((resolve) => setTimeout(resolve, 1000))
-        // Here you would normally upload to your backend
-        console.log(`Uploading ${files[i].name}...`)
+        const file = files[i]
+
+        // Create FormData for file upload
+        const fileFormData = new FormData()
+        fileFormData.append('file', file.file)
+        fileFormData.append('title', formData.title)
+        fileFormData.append('description', formData.description)
+        fileFormData.append('project', formData.project)
+        fileFormData.append('evidenceType', formData.evidenceType)
+        fileFormData.append('tags', formData.tags)
+        fileFormData.append('author', user.name)
+        fileFormData.append('authorId', user.id)
+
+        // Upload file via API
+        const response = await filesAPI.uploadFile(fileFormData)
+        uploadedFiles.push(response)
+
+        console.log(`Archivo subido: ${file.name}`)
       }
 
-      // Save to mock data
-      const uploadData = {
-        id: Date.now(),
-        ...formData,
-        files: files.map((f) => ({
-          name: f.name,
-          size: f.size,
-          type: f.type,
-        })),
-        author: user.name,
-        authorId: user.id,
-        uploadDate: new Date().toISOString(),
-        status: "pending",
+      // Create evidence entry if needed
+      if (formData.evidenceType) {
+        const evidenceData = {
+          title: formData.title,
+          description: formData.description,
+          project: formData.project,
+          evidenceType: formData.evidenceType,
+          tags: formData.tags.split(',').map(tag => tag.trim()),
+          files: uploadedFiles.map(f => f._id),
+          author: user.name,
+          authorId: user.id,
+          uploadDate: new Date().toISOString(),
+          status: "pending",
+        }
+
+        await evidencesAPI.createEvidence(evidenceData)
+        console.log("Evidence created successfully")
       }
 
-      console.log("Upload completed:", uploadData)
+      console.log("Upload completed successfully")
 
       // Reset form
       setFiles([])
@@ -173,10 +195,11 @@ const UploadView = () => {
         tags: "",
       })
 
-      alert("Files uploaded successfully!")
+      alert("¡Archivos subidos exitosamente!")
+
     } catch (error) {
       console.error("Upload failed:", error)
-      alert("Upload failed. Please try again.")
+      alert(`Error en la subida: ${error.message || 'Por favor intenta de nuevo.'}`)
     } finally {
       setUploading(false)
     }
@@ -210,9 +233,8 @@ const UploadView = () => {
                 <h2 className="text-lg font-semibold text-gray-900 mb-4">Select Files</h2>
 
                 <div
-                  className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
-                    dragActive ? "border-blue-500 bg-blue-50" : "border-gray-300 hover:border-gray-400"
-                  }`}
+                  className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${dragActive ? "border-blue-500 bg-blue-50" : "border-gray-300 hover:border-gray-400"
+                    }`}
                   onDragEnter={handleDrag}
                   onDragLeave={handleDrag}
                   onDragOver={handleDrag}
@@ -378,11 +400,10 @@ const UploadView = () => {
                 <button
                   type="submit"
                   disabled={uploading || files.length === 0}
-                  className={`px-6 py-3 rounded-md font-medium transition-colors ${
-                    uploading || files.length === 0
-                      ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                      : "bg-blue-600 hover:bg-blue-700 text-white"
-                  }`}
+                  className={`px-6 py-3 rounded-md font-medium transition-colors ${uploading || files.length === 0
+                    ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                    : "bg-blue-600 hover:bg-blue-700 text-white"
+                    }`}
                 >
                   {uploading ? "Uploading..." : "Upload Files"}
                 </button>

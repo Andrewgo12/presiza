@@ -37,7 +37,102 @@ router.post('/login', [
 
     const { email, password } = req.body;
 
-    // Buscar usuario y verificar credenciales
+    // FALLBACK: Si MongoDB no está disponible, usar credenciales hardcodeadas para desarrollo
+    const { getDatabaseStatus } = require('../config/database');
+    const dbStatus = getDatabaseStatus();
+
+    if (!dbStatus.mongodb.connected) {
+      // Credenciales de desarrollo hardcodeadas
+      const devUsers = [
+        {
+          _id: '507f1f77bcf86cd799439011',
+          email: 'admin@test.com',
+          password: 'admin123',
+          firstName: 'Admin',
+          lastName: 'User',
+          role: 'admin',
+          department: 'IT',
+          position: 'System Administrator',
+          isActive: true
+        },
+        {
+          _id: '507f1f77bcf86cd799439012',
+          email: 'user@test.com',
+          password: 'user123',
+          firstName: 'Test',
+          lastName: 'User',
+          role: 'user',
+          department: 'General',
+          position: 'User',
+          isActive: true
+        },
+        {
+          _id: '507f1f77bcf86cd799439013',
+          email: 'analyst@test.com',
+          password: 'analyst123',
+          firstName: 'Data',
+          lastName: 'Analyst',
+          role: 'analyst',
+          department: 'Analytics',
+          position: 'Senior Analyst',
+          isActive: true
+        },
+        {
+          _id: '507f1f77bcf86cd799439014',
+          email: 'investigator@test.com',
+          password: 'investigator123',
+          firstName: 'John',
+          lastName: 'Investigator',
+          role: 'investigator',
+          department: 'Investigation',
+          position: 'Lead Investigator',
+          isActive: true
+        }
+      ];
+
+      const user = devUsers.find(u => u.email === email && u.password === password);
+
+      if (!user) {
+        return res.status(401).json({
+          error: 'Credenciales inválidas',
+          code: 'INVALID_CREDENTIALS',
+          hint: 'Para desarrollo: admin@test.com/admin123 o user@test.com/user123'
+        });
+      }
+
+      // Generar tokens para usuario de desarrollo
+      const { accessToken, refreshToken } = generateTokens(user._id);
+
+      // Log de auditoría
+      await auditLogger(req, {
+        action: 'LOGIN',
+        resource: 'AUTH',
+        resourceId: user._id,
+        details: { email: user.email, method: 'FALLBACK_DEV' },
+        success: true
+      });
+
+      return res.json({
+        message: 'Inicio de sesión exitoso (modo desarrollo)',
+        user: {
+          id: user._id,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          role: user.role,
+          department: user.department,
+          position: user.position,
+          isActive: user.isActive
+        },
+        tokens: {
+          accessToken,
+          refreshToken
+        },
+        mode: 'development'
+      });
+    }
+
+    // Buscar usuario en MongoDB (cuando esté disponible)
     const user = await User.findByCredentials(email, password);
 
     // Generar tokens
@@ -55,16 +150,27 @@ router.post('/login', [
     });
 
   } catch (error) {
-    console.error('Error en login:', error);
-
+    // Distinguir entre errores esperados y errores reales
     if (error.message === 'Credenciales inválidas' ||
       error.message === 'Cuenta bloqueada temporalmente') {
+      // Error esperado: credenciales incorrectas
       return res.status(401).json({
         error: error.message,
         code: 'INVALID_CREDENTIALS'
       });
     }
 
+    if (error.code === 'ECONNREFUSED' || error.name === 'MongoNetworkError') {
+      // Error esperado: MongoDB no disponible (modo fallback activo)
+      console.log('ℹ️ MongoDB no disponible durante login, usando modo fallback');
+      return res.status(503).json({
+        error: 'Servicio temporalmente no disponible',
+        code: 'SERVICE_UNAVAILABLE'
+      });
+    }
+
+    // Error inesperado: registrar para debugging
+    console.error('❌ Error inesperado en login:', error);
     res.status(500).json({
       error: 'Error interno del servidor',
       code: 'INTERNAL_ERROR'
@@ -177,7 +283,23 @@ router.post('/refresh', [
     // Verificar refresh token
     const decoded = verifyRefreshToken(refreshToken);
 
-    // Buscar usuario
+    // FALLBACK: Si MongoDB no está disponible, usar usuarios de desarrollo
+    const { getDatabaseStatus } = require('../config/database');
+    const dbStatus = getDatabaseStatus();
+
+    if (!dbStatus.mongodb.connected) {
+      // En modo desarrollo, simplemente generar nuevos tokens
+      const { accessToken: newAccessToken, refreshToken: newRefreshToken } = generateTokens(decoded.userId);
+
+      return res.json({
+        accessToken: newAccessToken,
+        refreshToken: newRefreshToken,
+        expiresIn: process.env.JWT_EXPIRE || '24h',
+        mode: 'development'
+      });
+    }
+
+    // Buscar usuario en MongoDB
     const user = await User.findById(decoded.userId);
     if (!user || !user.isActive) {
       return res.status(401).json({
@@ -198,15 +320,26 @@ router.post('/refresh', [
     });
 
   } catch (error) {
-    console.error('Error renovando token:', error);
-
+    // Distinguir entre errores esperados y errores reales
     if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError') {
+      // Error esperado: token inválido o expirado
       return res.status(401).json({
         error: 'Refresh token inválido o expirado',
         code: 'INVALID_REFRESH_TOKEN'
       });
     }
 
+    if (error.code === 'ECONNREFUSED' || error.name === 'MongoNetworkError') {
+      // Error esperado: MongoDB no disponible (modo fallback activo)
+      console.log('ℹ️ MongoDB no disponible durante refresh token, usando modo fallback');
+      return res.status(503).json({
+        error: 'Servicio temporalmente no disponible',
+        code: 'SERVICE_UNAVAILABLE'
+      });
+    }
+
+    // Error inesperado: registrar para debugging
+    console.error('❌ Error inesperado renovando token:', error);
     res.status(500).json({
       error: 'Error interno del servidor',
       code: 'INTERNAL_ERROR'

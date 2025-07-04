@@ -34,6 +34,9 @@ const logRoutes = require('./routes/logs');
 const errorHandler = require('./middleware/errorHandler');
 const authMiddleware = require('./middleware/auth');
 
+// Importar configuración de Swagger
+const { swaggerUi, specs } = require('./config/swagger');
+
 // Configuración de la aplicación
 const app = express();
 const server = createServer(app);
@@ -132,6 +135,20 @@ io.on('connection', (socket) => {
 
 // Hacer io disponible en las rutas
 app.set('io', io);
+
+// Configurar documentación API con Swagger
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs, {
+  explorer: true,
+  customCss: '.swagger-ui .topbar { display: none }',
+  customSiteTitle: 'Evidence Management API Documentation',
+  swaggerOptions: {
+    persistAuthorization: true,
+    displayRequestDuration: true,
+    filter: true,
+    showExtensions: true,
+    showCommonExtensions: true
+  }
+}));
 
 // Rutas de la API
 app.use(`/api/${API_VERSION}/auth`, authRoutes);

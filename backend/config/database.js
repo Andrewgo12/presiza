@@ -52,32 +52,76 @@ const sequelize = new Sequelize(
 );
 
 /**
- * Conectar a MongoDB Atlas
+ * Conectar a MongoDB con fallback automático
  */
 const connectMongoDB = async () => {
-  try {
-    await mongoose.connect(mongoConfig.uri, mongoConfig.options);
-    console.log('✅ MongoDB Atlas conectado exitosamente');
+  const mongoUris = [
+    process.env.MONGODB_URI,
+    process.env.MONGODB_URI_LOCAL,
+    'mongodb://localhost:27017/evidence_management'
+  ].filter(Boolean);
 
-    // Configurar eventos de conexión
-    mongoose.connection.on('error', (error) => {
-      console.error('❌ Error en MongoDB Atlas:', error);
-    });
+  for (let i = 0; i < mongoUris.length; i++) {
+    const uri = mongoUris[i];
 
-    mongoose.connection.on('disconnected', () => {
-      console.log('⚠️  MongoDB Atlas desconectado');
-    });
+    try {
+      // Skip if password placeholder is still present
+      if (uri.includes('<db_password>')) {
+        console.log('⚠️ MongoDB URI contiene placeholder de contraseña, omitiendo...');
+        continue;
+      }
 
-    mongoose.connection.on('reconnected', () => {
-      console.log('🔄 MongoDB Atlas reconectado');
-    });
+      const isAtlas = uri.includes('mongodb+srv');
+      const isLocal = uri.includes('localhost');
 
-    return true;
-  } catch (error) {
-    console.error('❌ Error conectando a MongoDB Atlas:', error.message);
-    console.log('💡 Verifica tu string de conexión y credenciales de MongoDB Atlas');
-    return false;
+      console.log(`🍃 Intentando conectar a MongoDB ${isAtlas ? 'Atlas' : isLocal ? 'Local' : 'Remoto'}...`);
+
+      await mongoose.connect(uri, {
+        ...mongoConfig.options,
+        serverSelectionTimeoutMS: isAtlas ? 10000 : 5000, // More time for Atlas
+      });
+
+      console.log(`✅ MongoDB conectado exitosamente (${isAtlas ? 'Atlas' : isLocal ? 'Local' : 'Remoto'})`);
+      console.log('📊 Database:', mongoose.connection.db.databaseName);
+      console.log('🌐 Host:', mongoose.connection.host);
+
+      // Configurar eventos de conexión
+      mongoose.connection.on('error', (error) => {
+        console.error('❌ Error en MongoDB:', error);
+      });
+
+      mongoose.connection.on('disconnected', () => {
+        console.log('⚠️  MongoDB desconectado');
+      });
+
+      mongoose.connection.on('reconnected', () => {
+        console.log('🔄 MongoDB reconectado');
+      });
+
+      return true;
+
+    } catch (error) {
+      const isAtlas = uri.includes('mongodb+srv');
+      const isLocal = uri.includes('localhost');
+
+      console.error(`❌ Error conectando a MongoDB ${isAtlas ? 'Atlas' : isLocal ? 'Local' : 'Remoto'}:`, error.message);
+
+      if (isAtlas && error.message.includes('authentication failed')) {
+        console.log('💡 Verifica la contraseña de MongoDB Atlas en el archivo .env');
+      } else if (isLocal && error.message.includes('ECONNREFUSED')) {
+        console.log('💡 MongoDB local no está ejecutándose');
+      }
+
+      // Continue to next URI if this one failed
+      if (i < mongoUris.length - 1) {
+        console.log('🔄 Intentando siguiente opción de MongoDB...');
+      }
+    }
   }
+
+  console.log('⚠️ No se pudo conectar a ninguna instancia de MongoDB');
+  console.log('🔄 El sistema funcionará en modo fallback con usuarios de desarrollo');
+  return false;
 };
 
 /**

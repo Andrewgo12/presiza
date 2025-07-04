@@ -15,6 +15,7 @@ import NotificationsView from "./views/NotificationsView"
 import TasksView from "./views/TasksView"
 import AnalyticsView from "./views/AnalyticsView"
 import AdminGroupsView from "./views/AdminGroupsView"
+import AdminLogsView from "./views/AdminLogsView"
 import ProfileView from "./views/ProfileView"
 import SettingsView from "./views/SettingsView"
 
@@ -176,6 +177,15 @@ const AppRoutes = () => {
         element={
           <ProtectedRoute adminOnly>
             <AdminGroupsView />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/logs"
+        element={
+          <ProtectedRoute adminOnly>
+            <AdminLogsView />
           </ProtectedRoute>
         }
       />

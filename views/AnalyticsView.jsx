@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { useAuth } from "../context/AuthContext"
 import Header from "../components/Header"
 import Sidebar from "../components/Sidebar"
+import { analyticsAPI, logsAPI, filesAPI, usersAPI } from "../services/api"
 import { TrendingUp, Users, FileText, CheckCircle, Clock, Download, Calendar, AlertCircle } from "lucide-react"
 
 const AnalyticsView = () => {
@@ -12,91 +13,114 @@ const AnalyticsView = () => {
   const [dateRange, setDateRange] = useState("30")
   const [analytics, setAnalytics] = useState({})
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
   useEffect(() => {
-    // Simulate loading analytics data
     const loadAnalytics = async () => {
-      setLoading(true)
+      try {
+        setLoading(true)
+        setError(null)
 
-      // Simulate API delay
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+        // Cargar datos de múltiples fuentes
+        const [dashboardData, logsData, filesData, usersData] = await Promise.allSettled([
+          analyticsAPI.getDashboard(),
+          logsAPI.getAnalyticsData({
+            startDate: getDateByPeriod(dateRange).start,
+            endDate: getDateByPeriod(dateRange).end
+          }),
+          filesAPI.getFileStats(),
+          usersAPI.getUsers({ limit: 1 })
+        ])
 
-      const mockAnalytics = {
-        overview: {
-          totalFiles: 1247,
-          totalUsers: 156,
-          activeUsers: 89,
-          pendingValidations: 23,
-          approvedEvidences: 892,
-          rejectedEvidences: 45,
-          totalGroups: 12,
-          totalTasks: 67,
-        },
-        fileStats: {
-          byType: [
-            { type: "PDF", count: 456, percentage: 36.6 },
-            { type: "Images", count: 312, percentage: 25.0 },
-            { type: "Videos", count: 189, percentage: 15.2 },
-            { type: "Documents", count: 156, percentage: 12.5 },
-            { type: "Archives", count: 89, percentage: 7.1 },
-            { type: "Others", count: 45, percentage: 3.6 },
-          ],
-          uploadTrend: [
-            { date: "2024-01-01", uploads: 12 },
-            { date: "2024-01-02", uploads: 18 },
-            { date: "2024-01-03", uploads: 15 },
-            { date: "2024-01-04", uploads: 22 },
-            { date: "2024-01-05", uploads: 28 },
-            { date: "2024-01-06", uploads: 19 },
-            { date: "2024-01-07", uploads: 25 },
-            { date: "2024-01-08", uploads: 31 },
-            { date: "2024-01-09", uploads: 24 },
-            { date: "2024-01-10", uploads: 27 },
-          ],
-        },
-        userActivity: {
-          topUsers: [
-            { name: "Dr. Smith", uploads: 45, approvals: 89, avatar: "/placeholder.svg?height=32&width=32" },
-            { name: "Jane Wilson", uploads: 38, approvals: 67, avatar: "/placeholder.svg?height=32&width=32" },
-            { name: "John Doe", uploads: 32, approvals: 54, avatar: "/placeholder.svg?height=32&width=32" },
-            { name: "Mike Chen", uploads: 28, approvals: 43, avatar: "/placeholder.svg?height=32&width=32" },
-            { name: "Sarah Johnson", uploads: 24, approvals: 38, avatar: "/placeholder.svg?height=32&width=32" },
-          ],
-          activityTrend: [
-            { date: "2024-01-01", active: 45 },
-            { date: "2024-01-02", active: 52 },
-            { date: "2024-01-03", active: 48 },
-            { date: "2024-01-04", active: 61 },
-            { date: "2024-01-05", active: 67 },
-            { date: "2024-01-06", active: 58 },
-            { date: "2024-01-07", active: 72 },
-            { date: "2024-01-08", active: 69 },
-            { date: "2024-01-09", active: 64 },
-            { date: "2024-01-10", active: 78 },
-          ],
-        },
-        groupStats: {
-          mostActive: [
-            { name: "Research Team Alpha", members: 24, files: 156, activity: 89 },
-            { name: "Development Squad", members: 18, files: 134, activity: 76 },
-            { name: "Data Analytics Hub", members: 22, files: 98, activity: 65 },
-            { name: "Design Collective", members: 16, files: 87, activity: 54 },
-          ],
-        },
-        performance: {
-          avgResponseTime: 2.4,
-          avgValidationTime: 1.8,
-          systemUptime: 99.7,
-          storageUsed: 78.5,
-        },
+        // Procesar datos reales
+        const processedAnalytics = {
+          overview: {
+            totalFiles: dashboardData.status === 'fulfilled' ? dashboardData.value.totalFiles || 0 : 0,
+            totalUsers: usersData.status === 'fulfilled' ? usersData.value.pagination?.total || 0 : 0,
+            activeUsers: dashboardData.status === 'fulfilled' ? dashboardData.value.activeUsers || 0 : 0,
+            pendingValidations: logsData.status === 'fulfilled' ? logsData.value.dailyStats?.filter(s => s.metricType === 'file_upload').length || 0 : 0,
+            approvedEvidences: filesData.status === 'fulfilled' ? filesData.value.totalFiles || 0 : 0,
+            rejectedEvidences: 0,
+            totalGroups: dashboardData.status === 'fulfilled' ? dashboardData.value.totalGroups || 0 : 0,
+            totalTasks: 0,
+          },
+          fileStats: {
+            byType: dashboardData.status === 'fulfilled' ? dashboardData.value.filesByCategory || [] : [],
+            uploadTrend: logsData.status === 'fulfilled' ? processUploadTrend(logsData.value.dailyStats) : []
+          },
+          userActivity: {
+            topUsers: dashboardData.status === 'fulfilled' ? dashboardData.value.userActivity || [] : [],
+            activityTrend: logsData.status === 'fulfilled' ? processUserActivity(logsData.value.dailyStats) : []
+          },
+          groupStats: {
+            mostActive: dashboardData.status === 'fulfilled' ? dashboardData.value.topGroups || [] : []
+          },
+          performance: {
+            avgResponseTime: 0,
+            avgValidationTime: 0,
+            systemUptime: 99.9,
+            storageUsed: 0
+          }
+        }
+
+        setAnalytics(processedAnalytics)
+
+      } catch (err) {
+        console.error('Error loading analytics:', err)
+        setError('Error cargando analytics')
+        setAnalytics({
+          overview: { totalFiles: 0, totalUsers: 0, activeUsers: 0, pendingValidations: 0, approvedEvidences: 0, rejectedEvidences: 0, totalGroups: 0, totalTasks: 0 },
+          fileStats: { byType: [], uploadTrend: [] },
+          userActivity: { topUsers: [], activityTrend: [] },
+          groupStats: { mostActive: [] },
+          performance: { avgResponseTime: 0, avgValidationTime: 0, systemUptime: 0, storageUsed: 0 }
+        })
+      } finally {
+        setLoading(false)
       }
-
-      setAnalytics(mockAnalytics)
-      setLoading(false)
     }
 
     loadAnalytics()
   }, [dateRange])
+
+  // Funciones helper para procesar datos
+  const getDateByPeriod = (period) => {
+    const end = new Date()
+    const start = new Date()
+
+    switch (period) {
+      case '7d':
+        start.setDate(start.getDate() - 7)
+        break
+      case '30d':
+        start.setDate(start.getDate() - 30)
+        break
+      case '90d':
+        start.setDate(start.getDate() - 90)
+        break
+      default:
+        start.setDate(start.getDate() - 7)
+    }
+
+    return {
+      start: start.toISOString().split('T')[0],
+      end: end.toISOString().split('T')[0]
+    }
+  }
+
+  const processUploadTrend = (dailyStats) => {
+    if (!dailyStats) return []
+    return dailyStats
+      .filter(stat => stat.metricType === 'file_upload')
+      .map(stat => ({ date: stat.date, uploads: stat.totalCount || 0 }))
+  }
+
+  const processUserActivity = (dailyStats) => {
+    if (!dailyStats) return []
+    return dailyStats
+      .filter(stat => stat.metricType === 'user_login')
+      .map(stat => ({ date: stat.date, active: stat.totalCount || 0 }))
+  }
 
   const StatCard = ({ title, value, icon: Icon, color = "blue", trend = null, subtitle = null }) => (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">

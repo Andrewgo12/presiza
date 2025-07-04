@@ -288,6 +288,83 @@ export const analyticsAPI = {
 }
 
 /**
+ * Servicios de Logs y Auditoría (MySQL)
+ */
+export const logsAPI = {
+  // Obtener logs de auditoría
+  getAuditLogs: async (params = {}) => {
+    const queryString = new URLSearchParams(params).toString()
+    return await apiCall(`/logs/audit?${queryString}`)
+  },
+
+  // Obtener logs del sistema
+  getSystemLogs: async (params = {}) => {
+    const queryString = new URLSearchParams(params).toString()
+    return await apiCall(`/logs/system?${queryString}`)
+  },
+
+  // Obtener métricas de rendimiento
+  getPerformanceMetrics: async (params = {}) => {
+    const queryString = new URLSearchParams(params).toString()
+    return await apiCall(`/logs/performance?${queryString}`)
+  },
+
+  // Obtener datos de analytics (MySQL)
+  getAnalyticsData: async (params = {}) => {
+    const queryString = new URLSearchParams(params).toString()
+    return await apiCall(`/logs/analytics?${queryString}`)
+  },
+
+  // Obtener sesiones de usuario
+  getUserSessions: async (params = {}) => {
+    const queryString = new URLSearchParams(params).toString()
+    return await apiCall(`/logs/sessions?${queryString}`)
+  },
+
+  // Obtener resumen general
+  getSummary: async () => {
+    return await apiCall('/logs/summary')
+  },
+
+  // Limpiar logs antiguos
+  cleanupLogs: async (daysToKeep = 90) => {
+    return await apiCall('/logs/cleanup', {
+      method: 'POST',
+      body: JSON.stringify({ daysToKeep })
+    })
+  },
+
+  // Exportar logs
+  exportLogs: async (type = 'audit', startDate, endDate) => {
+    const params = new URLSearchParams({ type });
+    if (startDate) params.append('startDate', startDate);
+    if (endDate) params.append('endDate', endDate);
+
+    const response = await fetch(`${API_BASE_URL}/logs/export?${params}`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error('Error exporting logs');
+    }
+
+    return response.blob();
+  }
+}
+
+/**
+ * Servicios de Base de Datos
+ */
+export const databaseAPI = {
+  // Obtener estado de las bases de datos
+  getStatus: async () => {
+    return await apiCall('/database/status')
+  }
+}
+
+/**
  * Servicios de Notificaciones
  */
 export const notificationsAPI = {
@@ -327,5 +404,7 @@ export default {
   messages: messagesAPI,
   evidences: evidencesAPI,
   analytics: analyticsAPI,
-  notifications: notificationsAPI
+  notifications: notificationsAPI,
+  logs: logsAPI,
+  database: databaseAPI
 }

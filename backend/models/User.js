@@ -171,8 +171,7 @@ const userSchema = new mongoose.Schema({
   }
 });
 
-// Índices para optimización
-userSchema.index({ email: 1 });
+// Índices para optimización (email ya tiene índice único)
 userSchema.index({ role: 1 });
 userSchema.index({ isActive: 1 });
 userSchema.index({ department: 1 });

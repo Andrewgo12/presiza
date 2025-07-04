@@ -13,6 +13,119 @@ const File = require('../models/File');
 const { requireGroupPermission, requireOwnership } = require('../middleware/auth');
 const { AppError, asyncHandler } = require('../middleware/errorHandler');
 
+// Import database status for fallback functionality
+const { getDatabaseStatus } = require('../config/database');
+
+// Fallback file data for development mode
+const getFallbackFiles = () => [
+  {
+    _id: '507f1f77bcf86cd799439020',
+    filename: 'research_analysis_q4_2023.pdf',
+    originalName: 'Q4 Research Analysis Report.pdf',
+    mimeType: 'application/pdf',
+    size: 2048576,
+    path: '/uploads/2024/06/research_analysis_q4_2023.pdf',
+    url: 'https://storage.company.com/files/research_analysis_q4_2023.pdf',
+    uploadedBy: '507f1f77bcf86cd799439012',
+    category: 'document',
+    tags: ['research', 'analysis', 'Q4', 'report'],
+    isPublic: false,
+    accessLevel: 'internal',
+    status: 'active',
+    description: 'Comprehensive Q4 research analysis with statistical models',
+    version: 1,
+    downloadCount: 15,
+    viewCount: 45,
+    lastAccessed: new Date('2024-07-03'),
+    createdAt: new Date('2024-06-01'),
+    updatedAt: new Date('2024-06-01')
+  },
+  {
+    _id: '507f1f77bcf86cd799439021',
+    filename: 'ui_mockups_dashboard_v2.png',
+    originalName: 'Dashboard UI Mockups v2.0.png',
+    mimeType: 'image/png',
+    size: 3145728,
+    path: '/uploads/2024/07/ui_mockups_dashboard_v2.png',
+    uploadedBy: '507f1f77bcf86cd799439013',
+    category: 'image',
+    tags: ['ui', 'mockup', 'dashboard', 'design'],
+    isPublic: false,
+    accessLevel: 'internal',
+    status: 'active',
+    description: 'Updated dashboard interface mockups with accessibility improvements',
+    version: 2,
+    downloadCount: 12,
+    viewCount: 38,
+    lastAccessed: new Date('2024-07-04'),
+    createdAt: new Date('2024-07-01'),
+    updatedAt: new Date('2024-07-01')
+  },
+  {
+    _id: '507f1f77bcf86cd799439022',
+    filename: 'customer_feedback_data_q2.xlsx',
+    originalName: 'Customer Feedback Analysis Q2 2024.xlsx',
+    mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    size: 512000,
+    path: '/uploads/2024/07/customer_feedback_data_q2.xlsx',
+    uploadedBy: '507f1f77bcf86cd799439014',
+    category: 'document',
+    tags: ['customer', 'feedback', 'data', 'Q2', 'analysis'],
+    isPublic: false,
+    accessLevel: 'internal',
+    status: 'active',
+    description: 'Raw customer feedback data and analysis for Q2 2024',
+    version: 1,
+    downloadCount: 7,
+    viewCount: 14,
+    lastAccessed: new Date('2024-07-03'),
+    createdAt: new Date('2024-07-03'),
+    updatedAt: new Date('2024-07-03')
+  },
+  {
+    _id: '507f1f77bcf86cd799439023',
+    filename: 'security_audit_findings.pdf',
+    originalName: 'Security Audit Findings - June 2024.pdf',
+    mimeType: 'application/pdf',
+    size: 1536000,
+    path: '/uploads/2024/06/security_audit_findings.pdf',
+    uploadedBy: '507f1f77bcf86cd799439011',
+    category: 'document',
+    tags: ['security', 'audit', 'findings', 'vulnerabilities'],
+    isPublic: false,
+    accessLevel: 'confidential',
+    status: 'active',
+    description: 'Complete security assessment findings and recommendations',
+    version: 2,
+    downloadCount: 8,
+    viewCount: 22,
+    lastAccessed: new Date('2024-07-02'),
+    createdAt: new Date('2024-06-05'),
+    updatedAt: new Date('2024-06-05')
+  },
+  {
+    _id: '507f1f77bcf86cd799439024',
+    filename: 'compliance_training_intro.mp4',
+    originalName: 'Compliance Training Introduction.mp4',
+    mimeType: 'video/mp4',
+    size: 52428800,
+    path: '/uploads/2024/07/compliance_training_intro.mp4',
+    uploadedBy: '507f1f77bcf86cd799439012',
+    category: 'video',
+    tags: ['compliance', 'training', 'introduction', 'education'],
+    isPublic: false,
+    accessLevel: 'internal',
+    status: 'active',
+    description: 'Introduction video for new employee compliance training',
+    version: 1,
+    downloadCount: 3,
+    viewCount: 28,
+    lastAccessed: new Date('2024-07-04'),
+    createdAt: new Date('2024-07-04'),
+    updatedAt: new Date('2024-07-04')
+  }
+];
+
 const router = express.Router();
 
 // Configuración de multer para subida de archivos
@@ -158,7 +271,70 @@ router.get('/', asyncHandler(async (req, res) => {
     sortOrder = 'desc'
   } = req.query;
 
-  // Construir filtros
+  // FALLBACK: Si MongoDB no está disponible, usar datos hardcodeados
+  const dbStatus = getDatabaseStatus();
+
+  if (!dbStatus.mongodb.connected) {
+    let fallbackFiles = getFallbackFiles();
+
+    // Aplicar filtros a los datos de fallback
+    if (category) {
+      fallbackFiles = fallbackFiles.filter(file => file.category === category);
+    }
+
+    if (search) {
+      const searchRegex = new RegExp(search, 'i');
+      fallbackFiles = fallbackFiles.filter(file =>
+        searchRegex.test(file.originalName) ||
+        searchRegex.test(file.description) ||
+        file.tags.some(tag => searchRegex.test(tag))
+      );
+    }
+
+    // Filtro de permisos para usuarios no admin
+    if (req.user.role !== 'admin') {
+      fallbackFiles = fallbackFiles.filter(file =>
+        file.uploadedBy === req.user._id ||
+        file.isPublic ||
+        file.accessLevel === 'internal'
+      );
+    }
+
+    // Aplicar ordenamiento
+    fallbackFiles.sort((a, b) => {
+      const aVal = a[sortBy];
+      const bVal = b[sortBy];
+      if (sortOrder === 'desc') {
+        return bVal > aVal ? 1 : -1;
+      }
+      return aVal > bVal ? 1 : -1;
+    });
+
+    // Aplicar paginación
+    const skip = (page - 1) * limit;
+    const paginatedFiles = fallbackFiles.slice(skip, skip + parseInt(limit));
+
+    return res.json({
+      files: paginatedFiles.map(file => ({
+        ...file,
+        uploadedBy: {
+          _id: file.uploadedBy,
+          firstName: file.uploadedBy === '507f1f77bcf86cd799439011' ? 'Admin' : 'Test',
+          lastName: 'User',
+          email: file.uploadedBy === '507f1f77bcf86cd799439011' ? 'admin@test.com' : 'user@test.com'
+        }
+      })),
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total: fallbackFiles.length,
+        pages: Math.ceil(fallbackFiles.length / limit)
+      },
+      mode: 'development'
+    });
+  }
+
+  // Construir filtros para MongoDB
   const filters = { deletedAt: null };
 
   if (category) filters.category = category;
@@ -216,6 +392,41 @@ router.get('/', asyncHandler(async (req, res) => {
  * Obtener información de un archivo específico
  */
 router.get('/:id', asyncHandler(async (req, res) => {
+  // FALLBACK: Si MongoDB no está disponible, usar datos hardcodeados
+  const dbStatus = getDatabaseStatus();
+
+  if (!dbStatus.mongodb.connected) {
+    const fallbackFiles = getFallbackFiles();
+    const file = fallbackFiles.find(f => f._id === req.params.id);
+
+    if (!file) {
+      throw new AppError('Archivo no encontrado', 404, 'FILE_NOT_FOUND');
+    }
+
+    // Verificar permisos básicos
+    const hasAccess = file.uploadedBy === req.user._id ||
+      req.user.role === 'admin' ||
+      file.isPublic ||
+      file.accessLevel === 'internal';
+
+    if (!hasAccess) {
+      throw new AppError('No tienes permisos para ver este archivo', 403, 'ACCESS_DENIED');
+    }
+
+    return res.json({
+      file: {
+        ...file,
+        uploadedBy: {
+          _id: file.uploadedBy,
+          firstName: file.uploadedBy === '507f1f77bcf86cd799439011' ? 'Admin' : 'Test',
+          lastName: 'User',
+          email: file.uploadedBy === '507f1f77bcf86cd799439011' ? 'admin@test.com' : 'user@test.com'
+        }
+      },
+      mode: 'development'
+    });
+  }
+
   const file = await File.findById(req.params.id)
     .populate('uploadedBy', 'firstName lastName email')
     .populate('group', 'name type');
@@ -374,6 +585,172 @@ router.get('/stats/summary', asyncHandler(async (req, res) => {
     filesByCategory,
     recentFiles
   });
+}));
+
+// Endpoint para descargar archivos
+router.get('/:id/download', asyncHandler(async (req, res) => {
+  // FALLBACK: Si MongoDB no está disponible, usar datos hardcodeados
+  const dbStatus = getDatabaseStatus();
+
+  if (!dbStatus.mongodb.connected) {
+    const fallbackFiles = getFallbackFiles();
+    const file = fallbackFiles.find(f => f._id === req.params.id);
+
+    if (!file) {
+      throw new AppError('Archivo no encontrado', 404, 'FILE_NOT_FOUND');
+    }
+
+    // Verificar permisos básicos
+    const hasAccess = file.uploadedBy === req.user._id ||
+      req.user.role === 'admin' ||
+      file.isPublic ||
+      file.accessLevel === 'internal';
+
+    if (!hasAccess) {
+      throw new AppError('No tienes permisos para descargar este archivo', 403, 'ACCESS_DENIED');
+    }
+
+    // Para modo fallback, retornar información del archivo
+    return res.json({
+      message: 'Archivo disponible para descarga (modo desarrollo)',
+      file: {
+        filename: file.filename,
+        originalName: file.originalName,
+        size: file.size,
+        mimeType: file.mimeType,
+        downloadUrl: `/api/v1/files/${file._id}/download`
+      },
+      mode: 'development'
+    });
+  }
+
+  const file = await File.findById(req.params.id);
+
+  if (!file || file.deletedAt) {
+    throw new AppError('Archivo no encontrado', 404, 'FILE_NOT_FOUND');
+  }
+
+  // Verificar permisos de acceso
+  const hasAccess = req.user.role === 'admin' ||
+    file.uploadedBy.toString() === req.user._id.toString() ||
+    file.isPublic;
+
+  if (!hasAccess && file.group) {
+    const Group = require('../models/Group');
+    const group = await Group.findById(file.group);
+    if (!group || !group.isMember(req.user._id)) {
+      throw new AppError('No tienes permisos para descargar este archivo', 403, 'ACCESS_DENIED');
+    }
+  } else if (!hasAccess) {
+    throw new AppError('No tienes permisos para descargar este archivo', 403, 'ACCESS_DENIED');
+  }
+
+  // Verificar que el archivo existe en el sistema de archivos
+  const filePath = path.join(process.cwd(), file.path);
+
+  if (!fs.existsSync(filePath)) {
+    throw new AppError('Archivo no encontrado en el servidor', 404, 'FILE_NOT_FOUND_ON_DISK');
+  }
+
+  // Registrar descarga
+  await file.logAccess(req.user._id, 'download', req.ip, req.get('User-Agent'));
+
+  // Incrementar contador de descargas
+  await File.findByIdAndUpdate(req.params.id, {
+    $inc: { downloadCount: 1 },
+    lastAccessed: new Date()
+  });
+
+  // Configurar headers para la descarga
+  res.setHeader('Content-Disposition', `attachment; filename="${file.originalName}"`);
+  res.setHeader('Content-Type', file.mimeType);
+  res.setHeader('Content-Length', file.size);
+
+  // Enviar archivo
+  res.sendFile(filePath);
+}));
+
+// Endpoint para servir archivos (visualización)
+router.get('/:id/view', asyncHandler(async (req, res) => {
+  // FALLBACK: Si MongoDB no está disponible, usar datos hardcodeados
+  const dbStatus = getDatabaseStatus();
+
+  if (!dbStatus.mongodb.connected) {
+    const fallbackFiles = getFallbackFiles();
+    const file = fallbackFiles.find(f => f._id === req.params.id);
+
+    if (!file) {
+      throw new AppError('Archivo no encontrado', 404, 'FILE_NOT_FOUND');
+    }
+
+    // Verificar permisos básicos
+    const hasAccess = file.uploadedBy === req.user._id ||
+      req.user.role === 'admin' ||
+      file.isPublic ||
+      file.accessLevel === 'internal';
+
+    if (!hasAccess) {
+      throw new AppError('No tienes permisos para ver este archivo', 403, 'ACCESS_DENIED');
+    }
+
+    // Para modo fallback, retornar información del archivo
+    return res.json({
+      message: 'Archivo disponible para visualización (modo desarrollo)',
+      file: {
+        filename: file.filename,
+        originalName: file.originalName,
+        size: file.size,
+        mimeType: file.mimeType,
+        viewUrl: `/api/v1/files/${file._id}/view`
+      },
+      mode: 'development'
+    });
+  }
+
+  const file = await File.findById(req.params.id);
+
+  if (!file || file.deletedAt) {
+    throw new AppError('Archivo no encontrado', 404, 'FILE_NOT_FOUND');
+  }
+
+  // Verificar permisos de acceso
+  const hasAccess = req.user.role === 'admin' ||
+    file.uploadedBy.toString() === req.user._id.toString() ||
+    file.isPublic;
+
+  if (!hasAccess && file.group) {
+    const Group = require('../models/Group');
+    const group = await Group.findById(file.group);
+    if (!group || !group.isMember(req.user._id)) {
+      throw new AppError('No tienes permisos para ver este archivo', 403, 'ACCESS_DENIED');
+    }
+  } else if (!hasAccess) {
+    throw new AppError('No tienes permisos para ver este archivo', 403, 'ACCESS_DENIED');
+  }
+
+  // Verificar que el archivo existe en el sistema de archivos
+  const filePath = path.join(process.cwd(), file.path);
+
+  if (!fs.existsSync(filePath)) {
+    throw new AppError('Archivo no encontrado en el servidor', 404, 'FILE_NOT_FOUND_ON_DISK');
+  }
+
+  // Registrar visualización
+  await file.logAccess(req.user._id, 'view', req.ip, req.get('User-Agent'));
+
+  // Incrementar contador de vistas
+  await File.findByIdAndUpdate(req.params.id, {
+    $inc: { viewCount: 1 },
+    lastAccessed: new Date()
+  });
+
+  // Configurar headers para la visualización
+  res.setHeader('Content-Type', file.mimeType);
+  res.setHeader('Content-Length', file.size);
+  res.setHeader('Cache-Control', 'public, max-age=3600'); // Cache por 1 hora
+
+  // Enviar archivo
+  res.sendFile(filePath);
 }));
 
 module.exports = router;

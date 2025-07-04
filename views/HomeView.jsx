@@ -5,6 +5,7 @@ import { useAuth } from "../context/AuthContext"
 import { useNavigate } from "react-router-dom"
 import Header from "../components/Header"
 import Sidebar from "../components/Sidebar"
+import { analyticsAPI, filesAPI, usersAPI, groupsAPI, logsAPI } from "../services/api"
 import {
   Upload,
   Users,
@@ -22,24 +23,66 @@ const HomeView = () => {
   const navigate = useNavigate()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [stats, setStats] = useState({})
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
   useEffect(() => {
-    // Load user-specific stats
-    const loadStats = () => {
-      if (isAdmin) {
-        setStats({
-          totalFiles: 1247,
-          pendingTasks: 23,
-          activeUsers: 156,
-          completedValidations: 89,
+    const loadStats = async () => {
+      try {
+        setLoading(true)
+        setError(null)
+
+        if (isAdmin) {
+          // Cargar estadísticas de admin desde ambas bases de datos
+          const [dashboardData, logsData, filesData, usersData] = await Promise.allSettled([
+            analyticsAPI.getDashboard(),
+            logsAPI.getSummary(),
+            filesAPI.getFileStats(),
+            usersAPI.getUsers({ limit: 1 }) // Solo para contar
+          ])
+
+          const adminStats = {
+            totalFiles: dashboardData.status === 'fulfilled' ? dashboardData.value.totalFiles || 0 : 0,
+            activeUsers: usersData.status === 'fulfilled' ? usersData.value.pagination?.total || 0 : 0,
+            pendingTasks: logsData.status === 'fulfilled' ? logsData.value.summary?.auditLogs?.today || 0 : 0,
+            completedValidations: filesData.status === 'fulfilled' ? filesData.value.totalFiles || 0 : 0,
+            systemHealth: logsData.status === 'fulfilled' ? 'OK' : 'Warning'
+          }
+
+          setStats(adminStats)
+        } else {
+          // Cargar estadísticas de usuario regular
+          const [userFiles, userGroups] = await Promise.allSettled([
+            filesAPI.getFiles({ limit: 1 }),
+            groupsAPI.getGroups({ limit: 1 })
+          ])
+
+          const userStats = {
+            myFiles: userFiles.status === 'fulfilled' ? userFiles.value.pagination?.total || 0 : 0,
+            myGroups: userGroups.status === 'fulfilled' ? userGroups.value.pagination?.total || 0 : 0,
+            pendingTasks: 0, // Se puede implementar más tarde
+            notifications: 0 // Se puede implementar más tarde
+          }
+
+          setStats(userStats)
+        }
+      } catch (err) {
+        console.error('Error loading stats:', err)
+        setError('Error cargando estadísticas')
+        // Fallback a datos por defecto
+        setStats(isAdmin ? {
+          totalFiles: 0,
+          pendingTasks: 0,
+          activeUsers: 0,
+          completedValidations: 0,
+        } : {
+          myFiles: 0,
+          pendingTasks: 0,
+          myGroups: 0,
+          notifications: 0,
         })
-      } else {
-        setStats({
-          myFiles: 12,
-          pendingTasks: 3,
-          myGroups: 5,
-          notifications: 7,
-        })
+      } finally {
+        setLoading(false)
       }
     }
 
@@ -207,13 +250,12 @@ const HomeView = () => {
                 </div>
               </div>
               <span
-                className={`px-2 py-1 text-xs rounded-full ${
-                  activity.status === "Approved"
-                    ? "bg-green-100 text-green-800"
-                    : activity.status === "Under Review"
-                      ? "bg-yellow-100 text-yellow-800"
-                      : "bg-blue-100 text-blue-800"
-                }`}
+                className={`px-2 py-1 text-xs rounded-full ${activity.status === "Approved"
+                  ? "bg-green-100 text-green-800"
+                  : activity.status === "Under Review"
+                    ? "bg-yellow-100 text-yellow-800"
+                    : "bg-blue-100 text-blue-800"
+                  }`}
               >
                 {activity.status}
               </span>

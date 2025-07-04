@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { useAuth } from "../context/AuthContext"
 import Header from "../components/Header"
 import Sidebar from "../components/Sidebar"
+import { groupsAPI, usersAPI } from "../services/api"
 import { Search, Plus, Users, Lock, Globe, Key, Filter } from "lucide-react"
 
 const GroupsView = () => {
@@ -16,84 +17,175 @@ const GroupsView = () => {
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [showJoinModal, setShowJoinModal] = useState(false)
   const [selectedGroup, setSelectedGroup] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [pagination, setPagination] = useState({ page: 1, limit: 20, total: 0 })
 
   useEffect(() => {
-    // Load mock groups data
-    const mockGroups = [
-      {
-        id: 1,
-        name: "Research Team Alpha",
-        description: "Advanced research in AI and machine learning",
-        type: "public",
-        category: "Research",
-        members: 24,
-        location: "Global",
-        image: "/placeholder.svg?height=60&width=60",
-        isJoined: true,
-        createdBy: "Dr. Smith",
-      },
-      {
-        id: 2,
-        name: "Development Squad",
-        description: "Full-stack development team working on enterprise solutions",
-        type: "private",
-        category: "Development",
-        members: 12,
-        location: "USA",
-        image: "/placeholder.svg?height=60&width=60",
-        isJoined: false,
-        createdBy: "John Doe",
-      },
-      {
-        id: 3,
-        name: "Data Analytics Hub",
-        description: "Data science and analytics collaborative workspace",
-        type: "protected",
-        category: "Analytics",
-        members: 18,
-        location: "Europe",
-        image: "/placeholder.svg?height=60&width=60",
-        isJoined: true,
-        createdBy: "Jane Wilson",
-      },
-      {
-        id: 4,
-        name: "Design Collective",
-        description: "UI/UX designers sharing resources and feedback",
-        type: "public",
-        category: "Design",
-        members: 31,
-        location: "Global",
-        image: "/placeholder.svg?height=60&width=60",
-        isJoined: false,
-        createdBy: "Mike Chen",
-      },
-    ]
+    const loadGroups = async () => {
+      try {
+        setLoading(true)
+        setError(null)
 
-    setGroups(mockGroups)
-    setFilteredGroups(mockGroups)
-  }, [])
+        const params = {
+          page: pagination.page,
+          limit: pagination.limit
+        }
 
-  useEffect(() => {
-    let filtered = groups
+        if (filterType !== 'all') {
+          params.type = filterType
+        }
 
-    // Filter by search term
-    if (searchTerm) {
-      filtered = filtered.filter(
-        (group) =>
-          group.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          group.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          group.category.toLowerCase().includes(searchTerm.toLowerCase()),
+        if (searchTerm) {
+          params.search = searchTerm
+        }
+
+        const response = await groupsAPI.getGroups(params)
+
+        setGroups(response.groups || [])
+        setFilteredGroups(response.groups || [])
+        setPagination(response.pagination || { page: 1, limit: 20, total: 0 })
+
+      } catch (err) {
+        console.error('Error loading groups:', err)
+        setError('Error cargando grupos')
+        // Fallback a datos vacíos
+        setGroups([])
+        setFilteredGroups([])
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadGroups()
+  }, [pagination.page, pagination.limit, filterType, searchTerm])
+
+  // Función para crear grupo
+  const handleCreateGroup = async (groupData) => {
+    try {
+      const newGroup = await groupsAPI.createGroup(groupData)
+      setGroups(prev => [newGroup.group, ...prev])
+      setFilteredGroups(prev => [newGroup.group, ...prev])
+      setShowCreateModal(false)
+    } catch (err) {
+      console.error('Error creating group:', err)
+      setError('Error creando grupo')
+    }
+  }
+
+  // Función para unirse a grupo
+  const handleJoinGroup = async (groupId) => {
+    try {
+      await groupsAPI.addMember(groupId, user._id, 'member')
+      // Recargar grupos
+      const updatedGroups = groups.map(g =>
+        g._id === groupId
+          ? { ...g, members: [...g.members, { user: user, role: 'member' }] }
+          : g
       )
+      setGroups(updatedGroups)
+      setFilteredGroups(updatedGroups)
+    } catch (err) {
+      console.error('Error joining group:', err)
+      setError('Error uniéndose al grupo')
     }
+  }
 
-    // Filter by type
-    if (filterType !== "all") {
-      filtered = filtered.filter((group) => group.type === filterType)
-    }
+  // Si hay error, mostrar mensaje
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
+        <div className="flex">
+          <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+          <main className="flex-1 p-6">
+            <div className="text-center py-12">
+              <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Error cargando grupos</h3>
+              <p className="text-gray-500 mb-4">{error}</p>
+              <button
+                onClick={() => window.location.reload()}
+                className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+              >
+                Reintentar
+              </button>
+            </div>
+          </main>
+        </div>
+      </div>
+    )
+  }
+  if (searchTerm) {
+    filtered = filtered.filter(
+      (group) =>
+        group.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        group.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        group.category.toLowerCase().includes(searchTerm.toLowerCase()),
+    )
+  }
 
-    setFilteredGroups(filtered)
-  }, [searchTerm, filterType, groups])
+  // Filter by type
+  if (filterType !== "all") {
+    filtered = filtered.filter((group) => group.type === filterType)
+  }
+
+  // Componente GroupCard
+  const GroupCard = ({ group }) => {
+    const Icon = getGroupIcon(group.type)
+
+    return (
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+        <div className="flex items-start justify-between mb-4">
+          <div className="flex items-center space-x-3">
+            <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
+              <Icon className="w-6 h-6 text-gray-600" />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900">{group.name}</h3>
+              <p className="text-sm text-gray-500">{group.category}</p>
+            </div>
+          </div>
+          <span className={`px-2 py-1 text-xs font-medium rounded-full ${getGroupTypeColor(group.type)}`}>
+            {group.type}
+          </span>
+        </div>
+
+        <p className="text-gray-600 text-sm mb-4 line-clamp-2">{group.description}</p>
+
+        <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
+          <div className="flex items-center space-x-4">
+            <span className="flex items-center">
+              <Users className="w-4 h-4 mr-1" />
+              {group.members?.length || 0} members
+            </span>
+            <span>{group.location}</span>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between">
+          <span className="text-xs text-gray-400">
+            Created by {group.createdBy}
+          </span>
+
+          {group.isJoined ? (
+            <button
+              onClick={() => handleLeaveGroup(group.id)}
+              className="px-4 py-2 text-sm font-medium text-red-600 border border-red-300 rounded-md hover:bg-red-50"
+            >
+              Leave
+            </button>
+          ) : (
+            <button
+              onClick={() => handleJoinGroup(group)}
+              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
+            >
+              Join
+            </button>
+          )}
+        </div>
+      </div>
+    )
+  }
 
   const getGroupIcon = (type) => {
     switch (type) {
@@ -121,78 +213,12 @@ const GroupsView = () => {
     }
   }
 
-  const handleJoinGroup = (group) => {
-    if (group.type === "protected") {
-      setSelectedGroup(group)
-      setShowJoinModal(true)
-    } else if (group.type === "private") {
-      // Send join request
-      alert("Join request sent to group administrator")
-    } else {
-      // Join immediately for public groups
-      setGroups((prev) => prev.map((g) => (g.id === group.id ? { ...g, isJoined: true, members: g.members + 1 } : g)))
-    }
-  }
+
 
   const handleLeaveGroup = (groupId) => {
     if (window.confirm("Are you sure you want to leave this group?")) {
       setGroups((prev) => prev.map((g) => (g.id === groupId ? { ...g, isJoined: false, members: g.members - 1 } : g)))
     }
-  }
-
-  const GroupCard = ({ group }) => {
-    const GroupIcon = getGroupIcon(group.type)
-
-    return (
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex items-center space-x-3">
-            <img
-              src={group.image || "/placeholder.svg"}
-              alt={group.name}
-              className="w-12 h-12 rounded-lg object-cover"
-            />
-            <div>
-              <h3 className="font-semibold text-gray-900">{group.name}</h3>
-              <p className="text-sm text-gray-500">
-                {group.category} • {group.location}
-              </p>
-            </div>
-          </div>
-          <div
-            className={`flex items-center px-2 py-1 rounded-full text-xs font-medium ${getGroupTypeColor(group.type)}`}
-          >
-            <GroupIcon className="w-3 h-3 mr-1" />
-            {group.type}
-          </div>
-        </div>
-
-        <p className="text-sm text-gray-600 mb-4 line-clamp-2">{group.description}</p>
-
-        <div className="flex items-center justify-between">
-          <div className="flex items-center text-sm text-gray-500">
-            <Users className="w-4 h-4 mr-1" />
-            {group.members} members
-          </div>
-
-          {group.isJoined ? (
-            <button
-              onClick={() => handleLeaveGroup(group.id)}
-              className="px-4 py-2 text-sm font-medium text-red-600 border border-red-200 rounded-md hover:bg-red-50"
-            >
-              Leave
-            </button>
-          ) : (
-            <button
-              onClick={() => handleJoinGroup(group)}
-              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
-            >
-              Join
-            </button>
-          )}
-        </div>
-      </div>
-    )
   }
 
   const CreateGroupModal = () => {

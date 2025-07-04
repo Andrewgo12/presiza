@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { useAuth } from "../context/AuthContext"
 import Header from "../components/Header"
 import Sidebar from "../components/Sidebar"
+import { usersAPI, filesAPI, evidencesAPI } from "../services/api"
 import {
   User,
   Mail,
@@ -419,11 +420,10 @@ const ProfileView = () => {
                     <button
                       key={tab.id}
                       onClick={() => setActiveTab(tab.id)}
-                      className={`flex items-center py-2 px-1 border-b-2 font-medium text-sm ${
-                        activeTab === tab.id
+                      className={`flex items-center py-2 px-1 border-b-2 font-medium text-sm ${activeTab === tab.id
                           ? "border-blue-500 text-blue-600"
                           : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                      }`}
+                        }`}
                     >
                       <TabIcon className="w-4 h-4 mr-2" />
                       {tab.label}
@@ -603,13 +603,12 @@ const ProfileView = () => {
                         </p>
                       </div>
                       <span
-                        className={`px-3 py-1 text-sm font-medium rounded-full ${
-                          group.role === "admin"
+                        className={`px-3 py-1 text-sm font-medium rounded-full ${group.role === "admin"
                             ? "bg-purple-100 text-purple-800"
                             : group.role === "moderator"
                               ? "bg-blue-100 text-blue-800"
                               : "bg-gray-100 text-gray-800"
-                        }`}
+                          }`}
                       >
                         {group.role}
                       </span>

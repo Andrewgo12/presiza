@@ -8,6 +8,123 @@ const Group = require('../models/Group');
 const { requireGroupPermission } = require('../middleware/auth');
 const { AppError, asyncHandler } = require('../middleware/errorHandler');
 
+// Import database status for fallback functionality
+const { getDatabaseStatus } = require('../config/database');
+
+// Fallback group data for development mode
+const getFallbackGroups = () => [
+  {
+    _id: '507f1f77bcf86cd799439040',
+    name: 'Research Team Alpha',
+    description: 'Equipo principal de investigación y análisis de datos científicos',
+    type: 'public',
+    category: 'research',
+    members: [
+      { user: '507f1f77bcf86cd799439011', role: 'owner', joinedAt: new Date('2024-01-01') },
+      { user: '507f1f77bcf86cd799439012', role: 'admin', joinedAt: new Date('2024-01-15') },
+      { user: '507f1f77bcf86cd799439013', role: 'member', joinedAt: new Date('2024-02-01') }
+    ],
+    settings: {
+      maxMembers: 50,
+      allowInvites: true,
+      requireApproval: false
+    },
+    messageCount: 45,
+    fileCount: 12,
+    lastActivity: new Date('2024-07-03'),
+    createdAt: new Date('2024-01-01'),
+    updatedAt: new Date('2024-07-03')
+  },
+  {
+    _id: '507f1f77bcf86cd799439041',
+    name: 'Development Squad',
+    description: 'Equipo de desarrollo de software y sistemas',
+    type: 'private',
+    category: 'team',
+    members: [
+      { user: '507f1f77bcf86cd799439011', role: 'owner', joinedAt: new Date('2023-12-01') },
+      { user: '507f1f77bcf86cd799439013', role: 'admin', joinedAt: new Date('2024-01-10') }
+    ],
+    settings: {
+      maxMembers: 20,
+      allowInvites: false,
+      requireApproval: true
+    },
+    messageCount: 78,
+    fileCount: 25,
+    lastActivity: new Date('2024-07-04'),
+    createdAt: new Date('2023-12-01'),
+    updatedAt: new Date('2024-07-04')
+  },
+  {
+    _id: '507f1f77bcf86cd799439042',
+    name: 'Design Collective',
+    description: 'Grupo colaborativo de diseño y experiencia de usuario',
+    type: 'protected',
+    category: 'project',
+    members: [
+      { user: '507f1f77bcf86cd799439011', role: 'admin', joinedAt: new Date('2024-01-05') },
+      { user: '507f1f77bcf86cd799439012', role: 'member', joinedAt: new Date('2024-02-20') },
+      { user: '507f1f77bcf86cd799439014', role: 'member', joinedAt: new Date('2024-02-20') }
+    ],
+    settings: {
+      maxMembers: 30,
+      allowInvites: true,
+      requireApproval: true
+    },
+    messageCount: 32,
+    fileCount: 18,
+    lastActivity: new Date('2024-07-02'),
+    createdAt: new Date('2024-01-05'),
+    updatedAt: new Date('2024-07-02')
+  },
+  {
+    _id: '507f1f77bcf86cd799439043',
+    name: 'Data Analytics Hub',
+    description: 'Centro de análisis de datos y business intelligence',
+    type: 'public',
+    category: 'research',
+    members: [
+      { user: '507f1f77bcf86cd799439013', role: 'owner', joinedAt: new Date('2024-02-01') },
+      { user: '507f1f77bcf86cd799439011', role: 'admin', joinedAt: new Date('2024-02-10') },
+      { user: '507f1f77bcf86cd799439012', role: 'member', joinedAt: new Date('2024-02-20') }
+    ],
+    settings: {
+      maxMembers: 35,
+      allowInvites: true,
+      requireApproval: false
+    },
+    messageCount: 156,
+    fileCount: 34,
+    lastActivity: new Date('2024-07-04'),
+    createdAt: new Date('2024-02-01'),
+    updatedAt: new Date('2024-07-04')
+  },
+  {
+    _id: '507f1f77bcf86cd799439044',
+    name: 'General Discussion',
+    description: 'Espacio abierto para discusiones generales y anuncios',
+    type: 'public',
+    category: 'general',
+    members: [
+      { user: '507f1f77bcf86cd799439011', role: 'owner', joinedAt: new Date('2023-12-01') },
+      { user: '507f1f77bcf86cd799439012', role: 'member', joinedAt: new Date('2024-01-01') },
+      { user: '507f1f77bcf86cd799439013', role: 'member', joinedAt: new Date('2024-01-01') },
+      { user: '507f1f77bcf86cd799439014', role: 'member', joinedAt: new Date('2024-01-01') }
+    ],
+    settings: {
+      maxMembers: 100,
+      allowInvites: true,
+      requireApproval: false
+    },
+    messageCount: 234,
+    fileCount: 45,
+    lastActivity: new Date('2024-07-04'),
+    createdAt: new Date('2023-12-01'),
+    updatedAt: new Date('2024-07-04')
+  }
+];
+
 const router = express.Router();
 
 /**
@@ -16,6 +133,63 @@ const router = express.Router();
  */
 router.get('/', asyncHandler(async (req, res) => {
   const { page = 1, limit = 20, search, type, status } = req.query;
+
+  // FALLBACK: Si MongoDB no está disponible, usar datos hardcodeados
+  const dbStatus = getDatabaseStatus();
+
+  if (!dbStatus.mongodb.connected) {
+    let fallbackGroups = getFallbackGroups();
+
+    // Filtrar grupos donde el usuario es miembro
+    fallbackGroups = fallbackGroups.filter(group =>
+      group.members.some(member => member.user === req.user._id)
+    );
+
+    // Aplicar filtros de búsqueda
+    if (search) {
+      const searchRegex = new RegExp(search, 'i');
+      fallbackGroups = fallbackGroups.filter(group =>
+        searchRegex.test(group.name) || searchRegex.test(group.description)
+      );
+    }
+
+    if (type) {
+      fallbackGroups = fallbackGroups.filter(group => group.type === type);
+    }
+
+    // Ordenar por última actividad
+    fallbackGroups.sort((a, b) => new Date(b.lastActivity) - new Date(a.lastActivity));
+
+    // Aplicar paginación
+    const skip = (page - 1) * limit;
+    const paginatedGroups = fallbackGroups.slice(skip, skip + parseInt(limit));
+
+    // Enriquecer con información de usuarios
+    const enrichedGroups = paginatedGroups.map(group => ({
+      ...group,
+      members: group.members.map(member => ({
+        ...member,
+        user: {
+          _id: member.user,
+          firstName: member.user === '507f1f77bcf86cd799439011' ? 'Admin' : 'Test',
+          lastName: 'User',
+          email: member.user === '507f1f77bcf86cd799439011' ? 'admin@test.com' : 'user@test.com',
+          avatar: null
+        }
+      }))
+    }));
+
+    return res.json({
+      groups: enrichedGroups,
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total: fallbackGroups.length,
+        pages: Math.ceil(fallbackGroups.length / limit)
+      },
+      mode: 'development'
+    });
+  }
 
   const filters = {
     'members.user': req.user._id,
