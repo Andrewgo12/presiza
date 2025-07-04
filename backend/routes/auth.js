@@ -7,6 +7,7 @@ const express = require('express');
 const { body, validationResult } = require('express-validator');
 const User = require('../models/User');
 const { generateTokens, verifyRefreshToken, authenticateToken } = require('../middleware/auth');
+const { auditLogger, analyticsLogger } = require('../middleware/logging');
 
 const router = express.Router();
 
@@ -55,9 +56,9 @@ router.post('/login', [
 
   } catch (error) {
     console.error('Error en login:', error);
-    
-    if (error.message === 'Credenciales inválidas' || 
-        error.message === 'Cuenta bloqueada temporalmente') {
+
+    if (error.message === 'Credenciales inválidas' ||
+      error.message === 'Cuenta bloqueada temporalmente') {
       return res.status(401).json({
         error: error.message,
         code: 'INVALID_CREDENTIALS'
@@ -175,7 +176,7 @@ router.post('/refresh', [
 
     // Verificar refresh token
     const decoded = verifyRefreshToken(refreshToken);
-    
+
     // Buscar usuario
     const user = await User.findById(decoded.userId);
     if (!user || !user.isActive) {
@@ -198,7 +199,7 @@ router.post('/refresh', [
 
   } catch (error) {
     console.error('Error renovando token:', error);
-    
+
     if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError') {
       return res.status(401).json({
         error: 'Refresh token inválido o expirado',
@@ -221,7 +222,7 @@ router.post('/logout', authenticateToken, async (req, res) => {
   try {
     // En una implementación completa, aquí se invalidarían los tokens
     // Por ahora, simplemente confirmamos el logout
-    
+
     res.json({
       message: 'Sesión cerrada exitosamente'
     });
@@ -337,7 +338,7 @@ router.post('/change-password', authenticateToken, [
 
     // Obtener usuario con contraseña
     const user = await User.findById(req.user._id).select('+password');
-    
+
     // Verificar contraseña actual
     const isCurrentPasswordValid = await user.comparePassword(currentPassword);
     if (!isCurrentPasswordValid) {

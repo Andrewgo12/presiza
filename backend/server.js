@@ -5,7 +5,6 @@
 
 require('dotenv').config();
 const express = require('express');
-const mongoose = require('mongoose');
 const cors = require('cors');
 const helmet = require('helmet');
 const compression = require('compression');
@@ -13,6 +12,12 @@ const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
 const { createServer } = require('http');
 const { Server } = require('socket.io');
+
+// Importar configuración de bases de datos
+const { initializeDatabases, getDatabaseStatus } = require('./config/database');
+
+// Importar middleware de logging
+const { requestLogger, errorLogger, initAutoCleanup } = require('./middleware/logging');
 
 // Importar rutas
 const authRoutes = require('./routes/auth');
@@ -23,6 +28,7 @@ const messageRoutes = require('./routes/messages');
 const evidenceRoutes = require('./routes/evidences');
 const analyticsRoutes = require('./routes/analytics');
 const notificationRoutes = require('./routes/notifications');
+const logRoutes = require('./routes/logs');
 
 // Importar middleware personalizado
 const errorHandler = require('./middleware/errorHandler');
@@ -72,6 +78,7 @@ app.use(limiter);
 // Middleware general
 app.use(compression());
 app.use(morgan('combined'));
+app.use(requestLogger);
 app.use(cors({
   origin: process.env.CORS_ORIGINS?.split(',') || ['http://localhost:3000'],
   credentials: true,
@@ -82,18 +89,21 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Conexión a MongoDB
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/evidence_management', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
-  .then(() => {
-    console.log('✅ Conectado a MongoDB exitosamente');
-  })
-  .catch((error) => {
-    console.error('❌ Error conectando a MongoDB:', error);
-    process.exit(1);
-  });
+// Inicializar bases de datos (MongoDB Atlas + MySQL/XAMPP)
+let databaseStatus = { mongodb: false, mysql: false };
+
+const initDB = async () => {
+  databaseStatus = await initializeDatabases();
+
+  // Configurar variables globales para middleware
+  global.mongoConnected = databaseStatus.mongodb;
+  global.mysqlConnected = databaseStatus.mysql;
+
+  // Inicializar limpieza automática si MySQL está conectado
+  if (databaseStatus.mysql) {
+    initAutoCleanup();
+  }
+};
 
 // Configuración de Socket.IO para tiempo real
 io.use((socket, next) => {
@@ -132,15 +142,43 @@ app.use(`/api/${API_VERSION}/messages`, authMiddleware.authenticateToken, messag
 app.use(`/api/${API_VERSION}/evidences`, authMiddleware.authenticateToken, evidenceRoutes);
 app.use(`/api/${API_VERSION}/analytics`, authMiddleware.authenticateToken, analyticsRoutes);
 app.use(`/api/${API_VERSION}/notifications`, authMiddleware.authenticateToken, notificationRoutes);
+app.use(`/api/${API_VERSION}/logs`, authMiddleware.authenticateToken, logRoutes);
 
 // Ruta de salud del servidor
 app.get('/health', (req, res) => {
+  const dbStatus = getDatabaseStatus();
+
   res.json({
     status: 'OK',
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
     environment: process.env.NODE_ENV,
-    version: API_VERSION
+    version: API_VERSION,
+    databases: {
+      mongodb: {
+        connected: dbStatus.mongodb.connected,
+        type: 'MongoDB Atlas'
+      },
+      mysql: {
+        connected: dbStatus.mysql.connected,
+        type: 'MySQL/XAMPP'
+      }
+    }
+  });
+});
+
+// Ruta específica para estado de bases de datos
+app.get('/api/v1/database/status', (req, res) => {
+  const dbStatus = getDatabaseStatus();
+
+  res.json({
+    databases: dbStatus,
+    summary: {
+      total: 2,
+      connected: (dbStatus.mongodb.connected ? 1 : 0) + (dbStatus.mysql.connected ? 1 : 0),
+      mongodb_atlas: dbStatus.mongodb.connected ? 'Connected' : 'Disconnected',
+      mysql_xampp: dbStatus.mysql.connected ? 'Connected' : 'Disconnected'
+    }
   });
 });
 
@@ -155,6 +193,7 @@ app.get('/', (req, res) => {
 });
 
 // Middleware de manejo de errores (debe ir al final)
+app.use(errorLogger);
 app.use(errorHandler.errorHandler);
 
 // Manejo de rutas no encontradas
@@ -176,11 +215,15 @@ app.use('*', (req, res) => {
 });
 
 // Iniciar servidor
-server.listen(PORT, () => {
+server.listen(PORT, async () => {
   console.log(`🚀 Servidor ejecutándose en puerto ${PORT}`);
   console.log(`📚 API disponible en: http://localhost:${PORT}/api/${API_VERSION}`);
   console.log(`🏥 Health check: http://localhost:${PORT}/health`);
+  console.log(`🗄️  Database status: http://localhost:${PORT}/api/${API_VERSION}/database/status`);
   console.log(`🌍 Entorno: ${process.env.NODE_ENV || 'development'}`);
+
+  // Inicializar bases de datos después de que el servidor esté listo
+  await initDB();
 });
 
 // Manejo de errores no capturados
