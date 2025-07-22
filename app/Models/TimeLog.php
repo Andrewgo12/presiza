@@ -14,16 +14,22 @@ class TimeLog extends Model
         'user_id',
         'project_id',
         'milestone_id',
-        'task_description',
+        'task_name',
+        'description',
+        'task_description', // For backward compatibility
         'hours',
+        'duration_minutes',
         'date',
         'start_time',
         'end_time',
         'is_billable',
         'hourly_rate',
+        'status',
         'notes',
         'approved_by',
         'approved_at',
+        'tags',
+        'location',
     ];
 
     protected $casts = [
@@ -31,9 +37,11 @@ class TimeLog extends Model
         'start_time' => 'datetime',
         'end_time' => 'datetime',
         'hours' => 'decimal:2',
+        'duration_minutes' => 'integer',
         'hourly_rate' => 'decimal:2',
         'is_billable' => 'boolean',
         'approved_at' => 'datetime',
+        'tags' => 'array',
     ];
 
     /**

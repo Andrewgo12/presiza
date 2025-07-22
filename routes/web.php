@@ -13,6 +13,7 @@ use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ActivityController;
+use App\Http\Controllers\AdminController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Admin\SettingsController as AdminSettingsController;
 use Illuminate\Foundation\Application;
@@ -120,18 +121,51 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 // Rutas de administración (solo para administradores)
 Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.')->group(function () {
-    
+
     // Dashboard de administración
-    Route::get('/', function () {
-        return redirect()->route('admin.users.index');
-    });
-    
+    Route::get('/', [AdminController::class, 'dashboard'])->name('dashboard');
+
     // Gestión de usuarios
     Route::resource('users', AdminUserController::class);
     Route::patch('users/{user}/toggle-status', [AdminUserController::class, 'toggleStatus'])->name('users.toggle-status');
-    Route::post('users/{user}/reset-password', [AdminUserController::class, 'resetPassword'])->name('users.reset-password');
-    Route::get('users/{user}/activity', [AdminUserController::class, 'activity'])->name('users.activity');
-    Route::post('users/bulk-action', [AdminUserController::class, 'bulkAction'])->name('users.bulk-action');
+    Route::get('users/{user}/impersonate', [AdminUserController::class, 'impersonate'])->name('users.impersonate');
+    Route::get('stop-impersonating', [AdminUserController::class, 'stopImpersonating'])->name('users.stop-impersonating');
+
+    // Gestión de proyectos
+    Route::get('projects', [AdminController::class, 'projects'])->name('projects.index');
+
+    // Gestión de evidencias
+    Route::get('evidences', [AdminController::class, 'evidences'])->name('evidences.index');
+
+    // Gestión de grupos
+    Route::get('groups', [AdminController::class, 'groups'])->name('groups.index');
+
+    // Analytics
+    Route::get('analytics', [AdminController::class, 'analytics'])->name('analytics');
+
+    // Configuraciones del sistema
+    Route::get('settings', [AdminController::class, 'settings'])->name('settings');
+    Route::patch('settings', [AdminSettingsController::class, 'update'])->name('settings.update');
+
+    // Logs del sistema
+    Route::get('logs', [AdminController::class, 'logs'])->name('logs');
+
+    // Respaldos
+    Route::get('backups', [AdminController::class, 'backups'])->name('backups');
+
+    // Mantenimiento del sistema
+    Route::post('maintenance/cache-clear', [AdminSettingsController::class, 'clearCache'])->name('maintenance.cache-clear');
+    Route::post('maintenance/optimize', [AdminSettingsController::class, 'optimize'])->name('maintenance.optimize');
+    Route::post('maintenance/toggle', [AdminSettingsController::class, 'toggleMaintenance'])->name('maintenance.toggle');
+
+    // Gestión de respaldos
+    Route::post('settings/backup/create', [AdminSettingsController::class, 'backup'])->name('settings.backup.create');
+    Route::get('backups/download/{filename}', [AdminSettingsController::class, 'downloadBackup'])->name('backups.download');
+    Route::post('backups/restore/{filename}', [AdminSettingsController::class, 'restoreBackup'])->name('backups.restore');
+    Route::delete('backups/delete/{filename}', [AdminSettingsController::class, 'deleteBackup'])->name('backups.delete');
+
+    // Gestión de logs
+    Route::delete('settings/logs/clear', [AdminSettingsController::class, 'clearLogs'])->name('settings.logs.clear');
     
     // Configuraciones del sistema
     Route::get('settings', [AdminSettingsController::class, 'index'])->name('settings.index');

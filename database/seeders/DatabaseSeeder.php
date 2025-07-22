@@ -15,8 +15,12 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             GroupSeeder::class,
             ProjectSeeder::class,
+            MilestoneSeeder::class,
             FileSeeder::class,
             EvidenceSeeder::class,
+            TimeLogSeeder::class,
+            MessageSeeder::class,
+            NotificationSeeder::class,
         ]);
     }
 }

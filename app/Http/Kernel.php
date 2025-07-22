@@ -21,6 +21,8 @@ class Kernel extends HttpKernel
         \Illuminate\Foundation\Http\Middleware\ValidatePostSize::class,
         \App\Http\Middleware\TrimStrings::class,
         \Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull::class,
+        \App\Http\Middleware\SecurityHeaders::class,
+        \App\Http\Middleware\LogSecurityEvents::class,
     ];
 
     /**
@@ -67,5 +69,7 @@ class Kernel extends HttpKernel
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'active' => \App\Http\Middleware\CheckUserActive::class,
         'admin' => \App\Http\Middleware\AdminMiddleware::class,
+        'rate.limit' => \App\Http\Middleware\RateLimitMiddleware::class,
+        'validate.upload' => \App\Http\Middleware\ValidateFileUpload::class,
     ];
 }

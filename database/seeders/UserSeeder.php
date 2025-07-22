@@ -13,29 +13,111 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        // Crear usuarios principales
+        // Crear usuarios principales de prueba
         $users = [
+            // Administrador principal
             [
                 'first_name' => 'Admin',
-                'last_name' => 'Sistema',
-                'email' => 'admin@company.com',
-                'password' => Hash::make('admin123'),
+                'last_name' => 'Hospital',
+                'email' => 'admin@hospital.gov.co',
+                'password' => Hash::make('password'),
                 'role' => 'admin',
-                'department' => 'Tecnología',
+                'department' => 'Administración',
                 'position' => 'Administrador del Sistema',
                 'is_active' => true,
                 'email_verified_at' => now(),
+                'notification_settings' => [
+                    'email_notifications' => true,
+                    'push_notifications' => true,
+                    'evidence_notifications' => true,
+                    'message_notifications' => true,
+                    'project_notifications' => true,
+                ],
+                'privacy_settings' => [
+                    'profile_visibility' => 'public',
+                    'show_email' => true,
+                    'show_department' => true,
+                    'show_position' => true,
+                    'allow_messages' => true,
+                ],
             ],
+            // Médico
             [
-                'first_name' => 'Juan',
-                'last_name' => 'Pérez',
-                'email' => 'user@company.com',
-                'password' => Hash::make('user123'),
-                'role' => 'user',
-                'department' => 'Operaciones',
-                'position' => 'Analista',
+                'first_name' => 'Dr. Carlos',
+                'last_name' => 'Médico',
+                'email' => 'medico@hospital.gov.co',
+                'password' => Hash::make('password'),
+                'role' => 'investigator',
+                'department' => 'Medicina',
+                'position' => 'Médico Especialista',
                 'is_active' => true,
                 'email_verified_at' => now(),
+                'notification_settings' => [
+                    'email_notifications' => true,
+                    'push_notifications' => false,
+                    'evidence_notifications' => true,
+                    'message_notifications' => true,
+                    'project_notifications' => false,
+                ],
+                'privacy_settings' => [
+                    'profile_visibility' => 'team',
+                    'show_email' => false,
+                    'show_department' => true,
+                    'show_position' => true,
+                    'allow_messages' => true,
+                ],
+            ],
+            // EPS
+            [
+                'first_name' => 'Ana',
+                'last_name' => 'EPS',
+                'email' => 'eps@hospital.gov.co',
+                'password' => Hash::make('password'),
+                'role' => 'analyst',
+                'department' => 'EPS',
+                'position' => 'Analista EPS',
+                'is_active' => true,
+                'email_verified_at' => now(),
+                'notification_settings' => [
+                    'email_notifications' => true,
+                    'push_notifications' => true,
+                    'evidence_notifications' => true,
+                    'message_notifications' => false,
+                    'project_notifications' => true,
+                ],
+                'privacy_settings' => [
+                    'profile_visibility' => 'team',
+                    'show_email' => true,
+                    'show_department' => true,
+                    'show_position' => true,
+                    'allow_messages' => true,
+                ],
+            ],
+            // Sistema
+            [
+                'first_name' => 'Sistema',
+                'last_name' => 'Técnico',
+                'email' => 'sistema@hospital.gov.co',
+                'password' => Hash::make('password'),
+                'role' => 'admin',
+                'department' => 'Sistemas',
+                'position' => 'Técnico de Sistemas',
+                'is_active' => true,
+                'email_verified_at' => now(),
+                'notification_settings' => [
+                    'email_notifications' => true,
+                    'push_notifications' => true,
+                    'evidence_notifications' => true,
+                    'message_notifications' => true,
+                    'project_notifications' => true,
+                ],
+                'privacy_settings' => [
+                    'profile_visibility' => 'public',
+                    'show_email' => true,
+                    'show_department' => true,
+                    'show_position' => true,
+                    'allow_messages' => true,
+                ],
             ],
             [
                 'first_name' => 'María',

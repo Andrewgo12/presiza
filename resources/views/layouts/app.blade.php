@@ -226,6 +226,10 @@
 
     @stack('scripts')
 
+    <!-- Core JavaScript Components -->
+    <script src="{{ asset('js/components/notifications.js') }}"></script>
+    <script src="{{ asset('js/components/search.js') }}"></script>
+
     <!-- Global JavaScript Functions -->
     <script>
         // Global loading functions
