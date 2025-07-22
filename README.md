@@ -1,339 +1,325 @@
-# 🛡️ Sistema de Gestión de Evidencias
-
-[![React](https://img.shields.io/badge/React-18.0-blue.svg)](https://reactjs.org/)
-[![Node.js](https://img.shields.io/badge/Node.js-16+-green.svg)](https://nodejs.org/)
-[![MongoDB](https://img.shields.io/badge/MongoDB-4.4+-brightgreen.svg)](https://mongodb.com/)
-[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+# 🚀 Sistema de Gestión de Evidencias - Laravel
 
 ## 📋 Descripción
 
-Sistema completo de gestión de evidencias con funcionalidades avanzadas de colaboración, evaluación y análisis. Desarrollado con tecnologías modernas para proporcionar una experiencia de usuario excepcional.
+Sistema completo de gestión de evidencias desarrollado en Laravel 11, diseñado para organizaciones que necesitan un control riguroso de documentos, archivos y evidencias digitales con flujos de aprobación, roles de usuario y trazabilidad completa.
 
 ## ✨ Características Principales
 
-### 🔐 Autenticación y Seguridad
-- Sistema de login seguro con JWT
-- Roles de usuario (Admin/Usuario)
-- Protección de rutas sensibles
-- Gestión de sesiones
+### 🔐 Sistema de Autenticación y Autorización
+- **Autenticación completa** con Laravel Breeze
+- **4 roles de usuario**: Admin, Analyst, Investigator, User
+- **Políticas granulares** de acceso a recursos
+- **Middleware personalizado** para verificación de usuarios activos
+- **Gestión de perfiles** con avatars y configuraciones
 
-### 📤 Gestión de Archivos
-- Soporte para 100+ tipos de archivo
-- Carga por arrastrar y soltar
-- Límite de 2GB por archivo
-- Vista previa de imágenes
-- Sistema de etiquetas
+### 📁 Gestión Avanzada de Archivos
+- **Subida con drag & drop** usando Alpine.js
+- **Categorización automática** por tipo MIME
+- **4 niveles de acceso**: Public, Internal, Restricted, Confidential
+- **Generación automática de thumbnails** para imágenes
+- **Sistema de etiquetas** dinámico
+- **Previsualización** de archivos en el navegador
+- **Control de descargas** y visualizaciones
+- **Limpieza automática** de archivos expirados
 
-### 👥 Colaboración en Grupos
-- Grupos públicos, privados y protegidos
-- Gestión de miembros y roles
-- Sistema de invitaciones
-- Configuraciones personalizables
+### 🔍 Sistema de Evidencias
+- **CRUD completo** con validaciones robustas
+- **5 estados**: Pending, Under Review, Approved, Rejected, Archived
+- **4 niveles de prioridad**: Low, Medium, High, Critical
+- **6 categorías**: Security, Investigation, Compliance, Audit, Incident, Other
+- **Sistema de asignación** a responsables
+- **Flujo de evaluación** con calificaciones y recomendaciones
+- **Historial completo** de cambios con trazabilidad
+- **Asociación múltiple** con archivos
 
-### 🛡️ Evaluación de Evidencias
-- Sistema de calificación (1-5 estrellas)
-- Comentarios y retroalimentación
-- Estados de aprobación
-- Historial de evaluaciones
+### 👥 Gestión de Usuarios y Grupos
+- **Administración completa** de usuarios
+- **Grupos de trabajo** con 3 tipos: Public, Private, Restricted
+- **Sistema de membresías** con roles (Admin, Moderator, Member)
+- **Estadísticas detalladas** por usuario
+- **Estados activo/inactivo** con control de acceso
 
-### 💬 Comunicación
-- Mensajería en tiempo real
-- Chats individuales y grupales
-- Estados de entrega y lectura
-- Notificaciones push
+### 💬 Sistema de Mensajería
+- **Mensajes directos** entre usuarios
+- **Mensajes de grupo** con notificaciones
+- **4 niveles de prioridad** para mensajes
+- **Sistema de adjuntos** en mensajes
+- **Marcado de leído/no leído**
+- **Funciones de respuesta** y reenvío
 
-### 📊 Analytics y Reportes
-- Dashboard con métricas en tiempo real
-- Gráficos interactivos
-- Exportación de datos (PDF, CSV, JSON, XML)
-- Reportes personalizables
+### 📊 Dashboard y Analytics
+- **Métricas en tiempo real** con datos actualizados
+- **Gráficos interactivos** usando Chart.js
+- **Estadísticas por usuario** y departamento
+- **Actividad reciente** con filtros
+- **Indicadores de rendimiento** (KPIs)
 
-### 🔍 Búsqueda Avanzada
-- Búsqueda global con `Cmd/Ctrl + K`
-- Filtros inteligentes
-- Resultados categorizados
-- Navegación por teclado
-
-### 📱 Diseño Responsivo
-- Optimizado para móviles, tablets y desktop
-- Interfaz moderna y intuitiva
-- Animaciones fluidas
-- Modo oscuro (próximamente)
-
-## 🚀 Inicio Rápido
-
-### Prerrequisitos
-- Node.js 16 o superior
-- npm o yarn
-- MongoDB 4.4+ (para producción)
-
-### Instalación
-
-1. **Clonar el repositorio**
-```bash
-git clone https://github.com/Andrewgo12/reportes.git
-cd reportes
-```
-
-2. **Configurar Frontend**
-```bash
-# Instalar dependencias del frontend
-npm install
-
-# Configurar variables de entorno (opcional)
-cp .env.example .env.local
-```
-
-3. **Configurar Backend**
-```bash
-# Navegar al directorio backend
-cd backend
-
-# Instalar dependencias
-npm install
-
-# Configurar variables de entorno
-cp .env.example .env
-
-# Editar .env con tus configuraciones
-# MONGODB_URI=mongodb://localhost:27017/evidence_management
-# JWT_SECRET=tu-clave-secreta-jwt
-# PORT=5001
-```
-
-4. **Iniciar MongoDB**
-```bash
-# Si usas MongoDB local
-mongod
-
-# O usar MongoDB Atlas (configurar MONGODB_URI en .env)
-```
-
-5. **Ejecutar la Aplicación**
-
-**Desarrollo (2 terminales):**
-```bash
-# Terminal 1: Backend
-cd backend
-node server.js
-
-# Terminal 2: Frontend (desde la raíz)
-npm run dev
-```
-
-6. **Abrir en el navegador**
-```
-Frontend: http://localhost:3000
-Backend API: http://localhost:5001/api/v1
-Health Check: http://localhost:5001/health
-```
-
-### Credenciales de Demo
-
-**Administrador:**
-- Email: `admin@company.com`
-- Password: `admin123`
-
-**Usuario Regular:**
-- Email: `user@company.com`
-- Password: `user123`
-
-## 🏗️ Arquitectura del Sistema
-
-\`\`\`
-┌─────────────────────────────────────────────────────────────┐
-│                    FRONTEND (React.js)                      │
-├─────────────────────────────────────────────────────────────┤
-│  Views          │  Components     │  Context & Services     │
-│  ├─ LoginView   │  ├─ Header      │  ├─ AuthContext        │
-│  ├─ HomeView    │  ├─ Sidebar     │  ├─ NotificationSystem │
-│  ├─ UploadView  │  ├─ GlobalSearch│  └─ API Services       │
-│  ├─ GroupsView  │  ├─ DataExport  │                        │
-│  ├─ FilesView   │  └─ Reports     │                        │
-│  └─ ...         │                 │                        │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│                    BACKEND (Node.js)                       │
-├─────────────────────────────────────────────────────────────┤
-│  Controllers    │  Models         │  Routes & Middleware    │
-│  ├─ Auth        │  ├─ User        │  ├─ Authentication      │
-│  ├─ Files       │  ├─ File        │  ├─ File Upload        │
-│  ├─ Groups      │  ├─ Group       │  ├─ CORS & Security    │
-│  ├─ Messages    │  ├─ Message     │  └─ Error Handling     │
-│  └─ Analytics   │  └─ Evidence    │                        │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│                    DATABASE (MongoDB)                      │
-├─────────────────────────────────────────────────────────────┤
-│  Collections: users, files, groups, messages, evidences    │
-│  Indexes: email, timestamps, file_types, group_members     │
-│  Aggregations: analytics, reports, statistics              │
-└─────────────────────────────────────────────────────────────┘
-\`\`\`
-
-## 📱 Capturas de Pantalla
-
-### Dashboard Principal
-![Dashboard](docs/screenshots/dashboard.png)
-
-### Gestión de Archivos
-![Files Management](docs/screenshots/files.png)
-
-### Sistema de Grupos
-![Groups](docs/screenshots/groups.png)
-
-### Mensajería
-![Messages](docs/screenshots/messages.png)
+### 🎨 Interfaz de Usuario Moderna
+- **Diseño responsivo** con Tailwind CSS
+- **Componentes reutilizables** en Blade
+- **Interactividad** con Alpine.js
+- **Animaciones suaves** y transiciones
+- **Iconos SVG** optimizados
+- **Tema consistente** con variables CSS
 
 ## 🛠️ Tecnologías Utilizadas
 
-### Frontend
-- **React.js 18** - Framework principal
-- **React Router DOM** - Navegación
-- **Tailwind CSS** - Estilos y diseño responsivo
-- **Lucide React** - Iconografía moderna
-- **Recharts** - Gráficos y visualizaciones
+### Backend
+- **Laravel 11** - Framework PHP
+- **MySQL** - Base de datos relacional
+- **Eloquent ORM** - Mapeo objeto-relacional
+- **Laravel Breeze** - Autenticación
+- **Policies** - Autorización granular
 
-### Backend (Para producción)
-- **Node.js** - Runtime de JavaScript
-- **Express.js** - Framework web
-- **MongoDB** - Base de datos NoSQL
-- **Mongoose** - ODM para MongoDB
-- **JWT** - Autenticación
-- **Multer** - Carga de archivos
-- **bcryptjs** - Encriptación de contraseñas
+### Frontend
+- **Tailwind CSS 3** - Framework CSS utilitario
+- **Alpine.js 3** - Framework JavaScript reactivo
+- **Chart.js 4** - Gráficos interactivos
+- **Blade Templates** - Motor de plantillas
 
 ### Herramientas de Desarrollo
-- **ESLint** - Linting de código
-- **Prettier** - Formateo de código
-- **Concurrently** - Ejecución de scripts paralelos
+- **Vite** - Bundler de assets
+- **PHPUnit** - Testing framework
+- **Laravel Factories** - Generación de datos de prueba
+- **Artisan Commands** - Comandos personalizados
 
-## 📚 Documentación
+## 📦 Instalación
 
-- [📖 Documentación Completa](DOCUMENTACION_COMPLETA.md) - Guía detallada de clases y funciones
-- [🔧 Guía de Instalación](docs/INSTALLATION.md) - Instrucciones paso a paso
-- [🚀 Guía de Despliegue](docs/DEPLOYMENT.md) - Despliegue en producción
-- [🔌 API Reference](docs/API_REFERENCE.md) - Documentación de la API
-- [🎨 Guía de Diseño](docs/DESIGN_GUIDE.md) - Principios de diseño y UI/UX
+### Prerrequisitos
+- PHP 8.2 o superior
+- Composer
+- Node.js 16+ y npm
+- MySQL 8.0+
+- Extensiones PHP: BCMath, Ctype, Fileinfo, JSON, Mbstring, OpenSSL, PDO, Tokenizer, XML
 
-## 🔧 Scripts Disponibles
+### Pasos de Instalación
 
-\`\`\`bash
-# Desarrollo
-npm start              # Inicia la aplicación en modo desarrollo
-npm run build          # Construye la aplicación para producción
-npm test               # Ejecuta las pruebas
-npm run lint           # Ejecuta el linter
-npm run format         # Formatea el código
+1. **Clonar el repositorio**
+```bash
+git clone https://github.com/tu-usuario/laravel-reportes.git
+cd laravel-reportes
+```
 
-# Backend (cuando esté configurado)
-npm run server         # Inicia el servidor backend
-npm run dev            # Inicia frontend y backend simultáneamente
-npm run seed           # Pobla la base de datos con datos de prueba
-\`\`\`
+2. **Instalar dependencias PHP**
+```bash
+composer install
+```
 
-## 🌟 Características Avanzadas
+3. **Instalar dependencias Node.js**
+```bash
+npm install
+```
 
-### Atajos de Teclado
-- `Cmd/Ctrl + K` - Búsqueda global
-- `Cmd/Ctrl + Shift + R` - Generar reporte
-- `Cmd/Ctrl + Shift + E` - Exportar datos
-- `Esc` - Cerrar modales
+4. **Configurar entorno**
+```bash
+cp .env.example .env
+php artisan key:generate
+```
 
-### Funcionalidades de Accesibilidad
-- Navegación por teclado completa
-- Soporte para lectores de pantalla
-- Contraste de colores optimizado
-- Textos alternativos en imágenes
+5. **Configurar base de datos**
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=reportes_db
+DB_USERNAME=root
+DB_PASSWORD=tu_password
+```
 
-### Optimizaciones de Rendimiento
-- Lazy loading de componentes
-- Optimización de imágenes
-- Caché inteligente
-- Compresión de assets
+6. **Crear base de datos**
+```sql
+CREATE DATABASE reportes_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+```
+
+7. **Ejecutar migraciones y seeders**
+```bash
+php artisan migrate:fresh --seed
+```
+
+8. **Crear enlace de storage**
+```bash
+php artisan storage:link
+```
+
+9. **Compilar assets**
+```bash
+npm run build
+```
+
+10. **Iniciar servidor de desarrollo**
+```bash
+php artisan serve
+```
+
+## 👤 Usuarios de Prueba
+
+El sistema incluye usuarios de prueba con diferentes roles:
+
+| Email | Contraseña | Rol | Descripción |
+|-------|------------|-----|-------------|
+| admin@company.com | admin123 | Admin | Acceso completo al sistema |
+| analyst@company.com | analyst123 | Analyst | Gestión de evidencias y análisis |
+| investigator@company.com | investigator123 | Investigator | Investigación y evaluación |
+| user@company.com | user123 | User | Usuario básico |
+
+## 🧪 Testing
+
+### Ejecutar tests
+```bash
+# Todos los tests
+php artisan test
+
+# Tests específicos
+php artisan test --filter AuthTest
+php artisan test --filter FileTest
+php artisan test --filter EvidenceTest
+```
+
+### Coverage de tests
+```bash
+php artisan test --coverage
+```
+
+## 📁 Estructura del Proyecto
+
+```
+laravel-reportes/
+├── app/
+│   ├── Console/Commands/          # Comandos Artisan personalizados
+│   ├── Http/Controllers/          # Controladores
+│   ├── Http/Middleware/           # Middleware personalizado
+│   ├── Models/                    # Modelos Eloquent
+│   ├── Policies/                  # Políticas de autorización
+│   └── Services/                  # Servicios de negocio
+├── database/
+│   ├── factories/                 # Factories para testing
+│   ├── migrations/                # Migraciones de BD
+│   └── seeders/                   # Seeders de datos
+├── resources/
+│   ├── css/                       # Estilos CSS
+│   ├── js/                        # JavaScript
+│   └── views/                     # Vistas Blade
+├── routes/
+│   ├── web.php                    # Rutas web
+│   └── api.php                    # Rutas API
+└── tests/
+    └── Feature/                   # Tests funcionales
+```
+
+## 🔧 Comandos Artisan Personalizados
+
+### Limpieza de archivos expirados
+```bash
+php artisan files:cleanup-expired
+php artisan files:cleanup-expired --dry-run
+```
+
+### Generar reporte del sistema
+```bash
+php artisan system:report
+php artisan system:report --format=json
+php artisan system:report --format=csv
+```
+
+## 📊 Características Técnicas
+
+### Base de Datos
+- **10 tablas principales** con relaciones optimizadas
+- **Índices estratégicos** para consultas rápidas
+- **Soft deletes** para recuperación de datos
+- **Timestamps automáticos** en todas las tablas
+- **Constraints de integridad** referencial
+
+### Seguridad
+- **Validación robusta** en todos los formularios
+- **Sanitización** de datos de entrada
+- **Protección CSRF** en formularios
+- **Políticas granulares** de acceso
+- **Logs de auditoría** para acciones críticas
+
+### Performance
+- **Eager loading** para evitar N+1 queries
+- **Índices de base de datos** optimizados
+- **Cache de configuración** y rutas
+- **Assets minificados** en producción
+- **Lazy loading** de imágenes
+
+## 🚀 Despliegue en Producción
+
+### Configuración de producción
+```bash
+# Optimizar autoloader
+composer install --optimize-autoloader --no-dev
+
+# Cache de configuración
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+
+# Compilar assets para producción
+npm run build
+```
+
+### Variables de entorno importantes
+```env
+APP_ENV=production
+APP_DEBUG=false
+APP_URL=https://tu-dominio.com
+
+# Base de datos de producción
+DB_CONNECTION=mysql
+DB_HOST=tu-host-db
+DB_DATABASE=tu_base_datos
+DB_USERNAME=tu_usuario
+DB_PASSWORD=tu_password_seguro
+
+# Configuración de correo
+MAIL_MAILER=smtp
+MAIL_HOST=tu-smtp-host
+MAIL_USERNAME=tu-email
+MAIL_PASSWORD=tu-password
+```
+
+## 📈 Métricas y Monitoreo
+
+El sistema incluye métricas detalladas:
+- **Usuarios activos** y registros por período
+- **Archivos subidos** y espacio utilizado
+- **Evidencias procesadas** por estado y prioridad
+- **Actividad de grupos** y mensajes
+- **Performance** de consultas y operaciones
 
 ## 🤝 Contribución
 
-¡Las contribuciones son bienvenidas! Por favor, sigue estos pasos:
-
-1. **Fork** el proyecto
-2. **Crea** una rama para tu feature (`git checkout -b feature/AmazingFeature`)
-3. **Commit** tus cambios (`git commit -m 'Add some AmazingFeature'`)
-4. **Push** a la rama (`git push origin feature/AmazingFeature`)
-5. **Abre** un Pull Request
-
-### Guías de Contribución
-- Sigue las convenciones de código existentes
-- Añade tests para nuevas funcionalidades
-- Actualiza la documentación cuando sea necesario
-- Usa commits descriptivos
-
-## 🐛 Reporte de Bugs
-
-Si encuentras un bug, por favor:
-
-1. Verifica que no haya sido reportado anteriormente
-2. Crea un issue con información detallada
-3. Incluye pasos para reproducir el problema
-4. Añade capturas de pantalla si es relevante
-
-## 📈 Roadmap
-
-### Versión 1.1 (Próximamente)
-- [ ] Modo oscuro
-- [ ] Notificaciones push reales
-- [ ] Integración con servicios de nube
-- [ ] API REST completa
-
-### Versión 1.2
-- [ ] Aplicación móvil (React Native)
-- [ ] Integración con Microsoft Office
-- [ ] Sistema de workflows
-- [ ] Análisis de sentimientos en comentarios
-
-### Versión 2.0
-- [ ] Inteligencia artificial para categorización
-- [ ] Colaboración en tiempo real
-- [ ] Sistema de plugins
-- [ ] Multi-tenancy
+1. Fork el proyecto
+2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
+3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
+4. Push a la rama (`git push origin feature/AmazingFeature`)
+5. Abre un Pull Request
 
 ## 📄 Licencia
 
-Este proyecto está bajo la Licencia MIT. Ver el archivo [LICENSE](LICENSE) para más detalles.
-
-## 👥 Equipo
-
-- **Desarrollador Principal** - [Tu Nombre](https://github.com/tu-usuario)
-- **Diseñador UI/UX** - [Nombre del Diseñador](https://github.com/diseñador)
-- **Arquitecto de Software** - [Nombre del Arquitecto](https://github.com/arquitecto)
-
-## 🙏 Agradecimientos
-
-- Comunidad de React.js por las herramientas increíbles
-- Equipo de Tailwind CSS por el framework de estilos
-- Contribuidores de código abierto
-- Beta testers y usuarios que proporcionaron feedback
+Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más detalles.
 
 ## 📞 Soporte
 
-¿Necesitas ayuda? Contáctanos:
+Para soporte técnico o consultas:
+- **Email**: soporte@evidencias.com
+- **Documentación**: [Wiki del proyecto](https://github.com/tu-usuario/laravel-reportes/wiki)
+- **Issues**: [GitHub Issues](https://github.com/tu-usuario/laravel-reportes/issues)
 
-- 📧 Email: support@evidence-platform.com
-- 💬 Discord: [Servidor de la Comunidad](https://discord.gg/evidence-platform)
-- 📖 Wiki: [Documentación Completa](https://github.com/tu-usuario/evidence-management-platform/wiki)
-- 🐛 Issues: [GitHub Issues](https://github.com/tu-usuario/evidence-management-platform/issues)
+## 🎯 Roadmap
+
+### Próximas características
+- [ ] API REST completa
+- [ ] Notificaciones push en tiempo real
+- [ ] Integración con servicios de nube (AWS S3)
+- [ ] Módulo de reportes avanzados
+- [ ] Autenticación de dos factores (2FA)
+- [ ] Modo oscuro (Dark mode)
+- [ ] Aplicación móvil (PWA)
 
 ---
 
-<div align="center">
-
-**⭐ Si este proyecto te ha sido útil, ¡no olvides darle una estrella! ⭐**
-
-[🚀 Demo en Vivo](https://evidence-platform-demo.vercel.app) | [📚 Documentación](DOCUMENTACION_COMPLETA.md) | [🔧 API Docs](docs/API_REFERENCE.md)
-
-</div>
-\`\`\`
+**Desarrollado con ❤️ usando Laravel 11**

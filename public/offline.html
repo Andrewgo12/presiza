@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sin Conexión - Sistema de Reportes de Progreso</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .pulse-animation {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: .5;
+            }
+        }
+
+        .connection-indicator {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 50;
+        }
+
+        .offline-data {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Connection Status Indicator -->
+    <div id="connectionStatus" class="connection-indicator">
+        <div class="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-medium flex items-center">
+            <div class="w-2 h-2 bg-white rounded-full mr-2 pulse-animation"></div>
+            Sin conexión
+        </div>
+    </div>
+
+    <div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-md w-full space-y-8">
+            <!-- Logo and Header -->
+            <div class="text-center">
+                <div class="mx-auto h-20 w-20 bg-indigo-100 rounded-full flex items-center justify-center">
+                    <svg class="h-10 w-10 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M8.288 15.038a5.25 5.25 0 017.424 0M5.106 11.856c3.807-3.808 9.98-3.808 13.788 0M1.924 8.674c5.565-5.565 14.587-5.565 20.152 0M12.53 18.22l-.53.53-.53-.53a.75.75 0 011.06 0z" />
+                    </svg>
+                </div>
+                <h2 class="mt-6 text-3xl font-bold tracking-tight text-gray-900">
+                    Sin Conexión a Internet
+                </h2>
+                <p class="mt-2 text-sm text-gray-600">
+                    No se puede conectar al servidor. Verifica tu conexión a internet.
+                </p>
+            </div>
+
+            <!-- Offline Features -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Funciones Disponibles Sin Conexión</h3>
+                <div class="space-y-3">
+                    <div class="flex items-center">
+                        <svg class="h-5 w-5 text-green-500 mr-3" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span class="text-sm text-gray-700">Ver datos guardados localmente</span>
+                    </div>
+                    <div class="flex items-center">
+                        <svg class="h-5 w-5 text-green-500 mr-3" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span class="text-sm text-gray-700">Crear borradores de registros</span>
+                    </div>
+                    <div class="flex items-center">
+                        <svg class="h-5 w-5 text-green-500 mr-3" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span class="text-sm text-gray-700">Sincronización automática al reconectar</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cached Data Section -->
+            <div id="cachedData" class="bg-white rounded-lg shadow-md p-6">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Datos Disponibles</h3>
+                <div id="cachedContent" class="space-y-2">
+                    <div class="animate-pulse">
+                        <div class="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                        <div class="h-4 bg-gray-200 rounded w-1/2"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="space-y-4">
+                <button onclick="checkConnection()" 
+                        class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
+                    <svg class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+                    </svg>
+                    Reintentar Conexión
+                </button>
+
+                <button onclick="goToOfflineDashboard()" 
+                        class="w-full flex justify-center py-3 px-4 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
+                    <svg class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
+                    </svg>
+                    Ver Dashboard Offline
+                </button>
+            </div>
+
+            <!-- Tips -->
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <h3 class="text-sm font-medium text-blue-800">Consejos para trabajar sin conexión</h3>
+                        <div class="mt-2 text-sm text-blue-700">
+                            <ul class="list-disc pl-5 space-y-1">
+                                <li>Los cambios se guardarán localmente y se sincronizarán automáticamente</li>
+                                <li>Puedes continuar registrando tiempo y creando reportes</li>
+                                <li>Las notificaciones se mostrarán cuando se restaure la conexión</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Offline Dashboard Modal -->
+    <div id="offlineDashboard" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+        <div class="relative top-20 mx-auto p-5 border w-11/12 max-w-4xl shadow-lg rounded-md bg-white">
+            <div class="mt-3">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-medium text-gray-900">Dashboard Offline</h3>
+                    <button onclick="closeOfflineDashboard()" class="text-gray-400 hover:text-gray-600">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <div class="bg-indigo-50 p-4 rounded-lg">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <svg class="h-8 w-8 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
+                                </svg>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm font-medium text-gray-500">Proyectos Guardados</p>
+                                <p class="text-2xl font-semibold text-gray-900" id="offlineProjectsCount">-</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-green-50 p-4 rounded-lg">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <svg class="h-8 w-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm font-medium text-gray-500">Registros de Tiempo</p>
+                                <p class="text-2xl font-semibold text-gray-900" id="offlineTimeLogsCount">-</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-yellow-50 p-4 rounded-lg">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <svg class="h-8 w-8 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+                                </svg>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm font-medium text-gray-500">Pendientes de Sync</p>
+                                <p class="text-2xl font-semibold text-gray-900" id="pendingSyncCount">-</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="offlineDataList" class="space-y-2">
+                    <!-- Offline data will be populated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Check connection status
+        function updateConnectionStatus() {
+            const statusEl = document.getElementById('connectionStatus');
+            if (navigator.onLine) {
+                statusEl.innerHTML = `
+                    <div class="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium flex items-center">
+                        <div class="w-2 h-2 bg-white rounded-full mr-2"></div>
+                        Conectado
+                    </div>
+                `;
+                setTimeout(() => {
+                    window.location.href = '/dashboard';
+                }, 1000);
+            } else {
+                statusEl.innerHTML = `
+                    <div class="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-medium flex items-center">
+                        <div class="w-2 h-2 bg-white rounded-full mr-2 pulse-animation"></div>
+                        Sin conexión
+                    </div>
+                `;
+            }
+        }
+
+        function checkConnection() {
+            updateConnectionStatus();
+            if (navigator.onLine) {
+                // Try to fetch a small resource to verify actual connectivity
+                fetch('/ping', { method: 'HEAD', cache: 'no-cache' })
+                    .then(() => {
+                        window.location.href = '/dashboard';
+                    })
+                    .catch(() => {
+                        alert('Conexión detectada pero el servidor no está disponible. Intenta nuevamente en unos momentos.');
+                    });
+            } else {
+                alert('No hay conexión a internet disponible.');
+            }
+        }
+
+        function goToOfflineDashboard() {
+            document.getElementById('offlineDashboard').classList.remove('hidden');
+            loadOfflineData();
+        }
+
+        function closeOfflineDashboard() {
+            document.getElementById('offlineDashboard').classList.add('hidden');
+        }
+
+        function loadOfflineData() {
+            // Load cached data from localStorage or IndexedDB
+            const projects = JSON.parse(localStorage.getItem('cachedProjects') || '[]');
+            const timeLogs = JSON.parse(localStorage.getItem('cachedTimeLogs') || '[]');
+            const pendingSync = JSON.parse(localStorage.getItem('pendingSync') || '[]');
+
+            document.getElementById('offlineProjectsCount').textContent = projects.length;
+            document.getElementById('offlineTimeLogsCount').textContent = timeLogs.length;
+            document.getElementById('pendingSyncCount').textContent = pendingSync.length;
+
+            // Populate data list
+            const dataList = document.getElementById('offlineDataList');
+            dataList.innerHTML = '';
+
+            if (projects.length > 0) {
+                const projectsSection = document.createElement('div');
+                projectsSection.innerHTML = `
+                    <h4 class="font-medium text-gray-900 mb-2">Proyectos Disponibles</h4>
+                    <div class="space-y-1">
+                        ${projects.map(project => `
+                            <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
+                                <span class="text-sm text-gray-700">${project.name}</span>
+                                <span class="text-xs text-gray-500">${project.status}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                dataList.appendChild(projectsSection);
+            }
+        }
+
+        // Load cached content on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            updateConnectionStatus();
+            
+            // Load some cached data for display
+            const cachedContent = document.getElementById('cachedContent');
+            const projects = JSON.parse(localStorage.getItem('cachedProjects') || '[]');
+            
+            if (projects.length > 0) {
+                cachedContent.innerHTML = projects.slice(0, 3).map(project => `
+                    <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
+                        <span class="text-sm text-gray-700">${project.name}</span>
+                        <span class="text-xs text-gray-500">${project.status}</span>
+                    </div>
+                `).join('');
+            } else {
+                cachedContent.innerHTML = '<p class="text-sm text-gray-500">No hay datos guardados localmente</p>';
+            }
+        });
+
+        // Listen for connection changes
+        window.addEventListener('online', updateConnectionStatus);
+        window.addEventListener('offline', updateConnectionStatus);
+
+        // Auto-check connection every 30 seconds
+        setInterval(updateConnectionStatus, 30000);
+    </script>
+</body>
+</html>
