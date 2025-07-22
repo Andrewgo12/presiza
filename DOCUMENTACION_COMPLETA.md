@@ -1,1553 +1,788 @@
-# 📚 Documentación Completa - Sistema de Gestión de Evidencias
-
-## 📋 Índice
-
-1. [Arquitectura del Proyecto](#arquitectura-del-proyecto)
-2. [Documentación de Clases y Componentes](#documentación-de-clases-y-componentes)
-3. [Documentación de Funciones](#documentación-de-funciones)
-4. [Integración con Base de Datos](#integración-con-base-de-datos)
-5. [Construcción del Backend](#construcción-del-backend)
-6. [Preparación para Repositorio](#preparación-para-repositorio)
-
----
-
-## 🏗️ Arquitectura del Proyecto
-
-### Estructura de Directorios
-
-\`\`\`
-evidence-management-platform/
-├── app/
-│   └── page.tsx                    # Página principal de Next.js
-├── components/                     # Componentes reutilizables
-│   ├── DataExport.jsx             # Exportación de datos
-│   ├── GlobalSearch.jsx           # Búsqueda global
-│   ├── Header.jsx                 # Encabezado de la aplicación
-│   ├── NotificationSystem.jsx     # Sistema de notificaciones
-│   ├── ReportGenerator.jsx        # Generador de reportes
-│   └── Sidebar.jsx               # Barra lateral de navegación
-├── context/
-│   └── AuthContext.js             # Contexto de autenticación
-├── views/                         # Vistas principales
-│   ├── AdminGroupsView.jsx        # Administración de grupos
-│   ├── AnalyticsView.jsx          # Vista de analíticas
-│   ├── EvidencesView.jsx          # Gestión de evidencias
-│   ├── FilesView.jsx              # Explorador de archivos
-│   ├── GroupsView.jsx             # Vista de grupos
-│   ├── HomeView.jsx               # Dashboard principal
-│   ├── LoginView.jsx              # Vista de inicio de sesión
-│   ├── MessagesView.jsx           # Sistema de mensajería
-│   ├── NotificationsView.jsx      # Centro de notificaciones
-│   ├── ProfileView.jsx            # Perfil de usuario
-│   ├── SettingsView.jsx           # Configuración del sistema
-│   ├── TasksView.jsx              # Gestión de tareas
-│   └── UploadView.jsx             # Carga de archivos
-├── routes.jsx                     # Configuración de rutas
-├── App.jsx                        # Componente principal
-└── App.css                        # Estilos globales
-\`\`\`
-
----
-
-## 📖 Documentación de Clases y Componentes
-
-### 🔐 AuthContext (context/AuthContext.js)
-
-**Propósito**: Gestiona el estado de autenticación global de la aplicación.
-
-#### Clase: AuthProvider
-- **Ruta**: `context/AuthContext.js`
-- **Descripción**: Proveedor de contexto que maneja la autenticación de usuarios
-- **Estado**:
-  - `user`: Objeto del usuario autenticado
-  - `loading`: Estado de carga
-  - `isAuthenticated`: Estado de autenticación
-
-#### Funciones Principales:
-
-##### `login(email, password)`
-- **Parámetros**:
-  - `email` (string): Correo electrónico del usuario
-  - `password` (string): Contraseña del usuario
-- **Retorna**: Promise con objeto de resultado
-- **Descripción**: Autentica al usuario y establece la sesión
-- **Flujo**:
-  1. Valida credenciales contra usuarios mock
-  2. Genera token de sesión
-  3. Guarda datos en localStorage
-  4. Actualiza estado global
-
-##### `logout()`
-- **Parámetros**: Ninguno
-- **Retorna**: void
-- **Descripción**: Cierra la sesión del usuario
-- **Flujo**:
-  1. Limpia localStorage
-  2. Resetea estado de usuario
-  3. Redirige a login
-
-##### `updateUser(userData)`
-- **Parámetros**:
-  - `userData` (object): Datos actualizados del usuario
-- **Retorna**: void
-- **Descripción**: Actualiza información del usuario autenticado
-
----
-
-### 🏠 HomeView (views/HomeView.jsx)
-
-**Propósito**: Dashboard principal con métricas y acciones rápidas.
-
-#### Clase: HomeView
-- **Ruta**: `views/HomeView.jsx`
-- **Descripción**: Vista principal del dashboard
-- **Rutas**: `/dashboard`, `/`
-
-#### Componentes Internos:
-
-##### `QuickActionCard({ icon, title, description, onClick, color })`
-- **Parámetros**:
-  - `icon` (Component): Icono del componente
-  - `title` (string): Título de la acción
-  - `description` (string): Descripción de la acción
-  - `onClick` (function): Función de callback
-  - `color` (string): Color del tema
-- **Descripción**: Tarjeta de acción rápida para navegación
-
-##### `StatCard({ title, value, icon, color })`
-- **Parámetros**:
-  - `title` (string): Título de la estadística
-  - `value` (string|number): Valor a mostrar
-  - `icon` (Component): Icono representativo
-  - `color` (string): Color del tema
-- **Descripción**: Tarjeta de estadística con métricas
-
-#### Funciones Específicas:
-
-##### `AdminDashboard()`
-- **Descripción**: Renderiza dashboard para administradores
-- **Características**:
-  - Estadísticas del sistema
-  - Actividad reciente
-  - Acciones administrativas
-
-##### `UserDashboard()`
-- **Descripción**: Renderiza dashboard para usuarios regulares
-- **Características**:
-  - Estadísticas personales
-  - Acciones de usuario
-  - Actividad personal
-
----
-
-### 📤 UploadView (views/UploadView.jsx)
-
-**Propósito**: Interfaz para carga de archivos con soporte para 100+ tipos.
-
-#### Clase: UploadView
-- **Ruta**: `views/UploadView.jsx`
-- **Descripción**: Vista de carga de archivos
-- **Rutas**: `/upload`
-
-#### Funciones Principales:
-
-##### `validateFile(file)`
-- **Parámetros**:
-  - `file` (File): Archivo a validar
-- **Retorna**: Array de errores
-- **Descripción**: Valida tipo y tamaño de archivo
-- **Validaciones**:
-  - Tamaño máximo: 2GB
-  - Tipos soportados: 100+ formatos
-
-##### `handleDrag(e)`
-- **Parámetros**:
-  - `e` (Event): Evento de drag
-- **Retorna**: void
-- **Descripción**: Maneja eventos de arrastrar y soltar
-
-##### `handleDrop(e)`
-- **Parámetros**:
-  - `e` (Event): Evento de drop
-- **Retorna**: void
-- **Descripción**: Procesa archivos soltados
-
-##### `handleFiles(fileList)`
-- **Parámetros**:
-  - `fileList` (FileList): Lista de archivos
-- **Retorna**: void
-- **Descripción**: Procesa y valida archivos seleccionados
-
-##### `handleSubmit(e)`
-- **Parámetros**:
-  - `e` (Event): Evento de formulario
-- **Retorna**: Promise
-- **Descripción**: Envía archivos al servidor
-- **Flujo**:
-  1. Valida archivos
-  2. Simula carga
-  3. Guarda metadatos
-  4. Muestra confirmación
-
----
-
-### 👥 GroupsView (views/GroupsView.jsx)
-
-**Propósito**: Gestión de grupos colaborativos.
-
-#### Clase: GroupsView
-- **Ruta**: `views/GroupsView.jsx`
-- **Descripción**: Vista de gestión de grupos
-- **Rutas**: `/groups`
-
-#### Funciones Principales:
-
-##### `handleJoinGroup(group)`
-- **Parámetros**:
-  - `group` (object): Objeto del grupo
-- **Retorna**: void
-- **Descripción**: Procesa solicitud de unión a grupo
-- **Flujo**:
-  1. Verifica tipo de grupo
-  2. Maneja autenticación si es necesario
-  3. Actualiza membresía
-
-##### `handleLeaveGroup(groupId)`
-- **Parámetros**:
-  - `groupId` (number): ID del grupo
-- **Retorna**: void
-- **Descripción**: Procesa salida de grupo
-
-##### `CreateGroupModal()`
-- **Descripción**: Modal para crear nuevos grupos
-- **Campos**:
-  - Nombre del grupo
-  - Descripción
-  - Tipo (público/privado/protegido)
-  - Categoría
-  - Contraseña (si es protegido)
-
----
-
-### 📁 FilesView (views/FilesView.jsx)
-
-**Propósito**: Explorador de archivos con filtros avanzados.
-
-#### Clase: FilesView
-- **Ruta**: `views/FilesView.jsx`
-- **Descripción**: Vista de exploración de archivos
-- **Rutas**: `/files`
-
-#### Funciones Principales:
-
-##### `formatFileSize(bytes)`
-- **Parámetros**:
-  - `bytes` (number): Tamaño en bytes
-- **Retorna**: string
-- **Descripción**: Convierte bytes a formato legible
-
-##### `getFileIcon(type, category)`
-- **Parámetros**:
-  - `type` (string): Tipo MIME
-  - `category` (string): Categoría del archivo
-- **Retorna**: Component
-- **Descripción**: Retorna icono apropiado para el tipo de archivo
-
-##### `handleDownload(file)`
-- **Parámetros**:
-  - `file` (object): Objeto del archivo
-- **Retorna**: void
-- **Descripción**: Inicia descarga del archivo
-
-##### `handleLike(fileId)`
-- **Parámetros**:
-  - `fileId` (number): ID del archivo
-- **Retorna**: void
-- **Descripción**: Procesa "me gusta" en archivo
-
-#### Componentes Internos:
-
-##### `FileCard({ file })`
-- **Descripción**: Tarjeta de archivo en vista de cuadrícula
-- **Características**:
-  - Vista previa
-  - Metadatos
-  - Acciones (ver, descargar, like)
-
-##### `FileRow({ file })`
-- **Descripción**: Fila de archivo en vista de lista
-- **Características**:
-  - Información compacta
-  - Acciones rápidas
-
----
-
-### 🛡️ EvidencesView (views/EvidencesView.jsx)
-
-**Propósito**: Gestión y evaluación de evidencias.
-
-#### Clase: EvidencesView
-- **Ruta**: `views/EvidencesView.jsx`
-- **Descripción**: Vista de gestión de evidencias
-- **Rutas**: `/evidences`
-
-#### Funciones Principales:
-
-##### `handleViewEvidence(evidence)`
-- **Parámetros**:
-  - `evidence` (object): Objeto de evidencia
-- **Retorna**: void
-- **Descripción**: Abre modal de detalle de evidencia
-
-##### `handleUpdateStatus(evidenceId, newStatus, rating, feedback)`
-- **Parámetros**:
-  - `evidenceId` (number): ID de la evidencia
-  - `newStatus` (string): Nuevo estado
-  - `rating` (number): Calificación (1-5)
-  - `feedback` (string): Retroalimentación
-- **Retorna**: void
-- **Descripción**: Actualiza estado de evidencia
-
-#### Componentes Internos:
-
-##### `EvidenceCard({ evidence })`
-- **Descripción**: Tarjeta de evidencia
-- **Características**:
-  - Estado visual
-  - Calificación con estrellas
-  - Metadatos completos
-
-##### `EvidenceDetailModal()`
-- **Descripción**: Modal de detalle y evaluación
-- **Características**:
-  - Información completa
-  - Sistema de comentarios
-  - Panel de evaluación (admin)
-
----
-
-### 💬 MessagesView (views/MessagesView.jsx)
-
-**Propósito**: Sistema de mensajería en tiempo real.
-
-#### Clase: MessagesView
-- **Ruta**: `views/MessagesView.jsx`
-- **Descripción**: Vista de mensajería
-- **Rutas**: `/messages`
-
-#### Funciones Principales:
-
-##### `handleSendMessage(e)`
-- **Parámetros**:
-  - `e` (Event): Evento de formulario
-- **Retorna**: void
-- **Descripción**: Envía nuevo mensaje
-- **Flujo**:
-  1. Valida contenido
-  2. Crea objeto mensaje
-  3. Actualiza conversación
-  4. Limpia formulario
-
-##### `formatTime(timestamp)`
-- **Parámetros**:
-  - `timestamp` (string): Marca de tiempo ISO
-- **Retorna**: string
-- **Descripción**: Formatea tiempo para mostrar
-
-#### Componentes Internos:
-
-##### `ConversationItem({ conversation })`
-- **Descripción**: Item de conversación en lista
-- **Características**:
-  - Avatar y estado en línea
-  - Último mensaje
-  - Contador de no leídos
-
-##### `MessageBubble({ message, isOwn })`
-- **Descripción**: Burbuja de mensaje
-- **Características**:
-  - Estilo diferenciado por autor
-  - Estado de entrega
-  - Marca de tiempo
-
-##### `NewChatModal()`
-- **Descripción**: Modal para crear nueva conversación
-- **Características**:
-  - Selección de usuarios
-  - Chat individual o grupal
-
----
-
-### 🔔 NotificationsView (views/NotificationsView.jsx)
-
-**Propósito**: Centro de notificaciones del sistema.
-
-#### Clase: NotificationsView
-- **Ruta**: `views/NotificationsView.jsx`
-- **Descripción**: Vista de notificaciones
-- **Rutas**: `/notifications`
-
-#### Funciones Principales:
-
-##### `markAsRead(notificationId)`
-- **Parámetros**:
-  - `notificationId` (number): ID de la notificación
-- **Retorna**: void
-- **Descripción**: Marca notificación como leída
-
-##### `markAllAsRead()`
-- **Parámetros**: Ninguno
-- **Retorna**: void
-- **Descripción**: Marca todas las notificaciones como leídas
-
-##### `deleteNotification(notificationId)`
-- **Parámetros**:
-  - `notificationId` (number): ID de la notificación
-- **Retorna**: void
-- **Descripción**: Elimina notificación
-
-##### `getActivityIcon(type)`
-- **Parámetros**:
-  - `type` (string): Tipo de actividad
-- **Retorna**: Component
-- **Descripción**: Retorna icono según tipo de notificación
-
-#### Componentes Internos:
-
-##### `NotificationCard({ notification })`
-- **Descripción**: Tarjeta de notificación
-- **Características**:
-  - Icono por tipo
-  - Estado visual (leída/no leída)
-  - Acciones (marcar, archivar, eliminar)
-
----
-
-### ✅ TasksView (views/TasksView.jsx)
-
-**Propósito**: Gestión de tareas y evaluaciones (Solo Admin).
-
-#### Clase: TasksView
-- **Ruta**: `views/TasksView.jsx`
-- **Descripción**: Vista de gestión de tareas
-- **Rutas**: `/admin/tasks`
-- **Acceso**: Solo administradores
-
-#### Funciones Principales:
-
-##### `handleUpdateStatus(evidenceId, newStatus, rating, feedback)`
-- **Parámetros**:
-  - `evidenceId` (number): ID de la evidencia
-  - `newStatus` (string): Nuevo estado
-  - `rating` (number): Calificación
-  - `feedback` (string): Retroalimentación
-- **Retorna**: void
-- **Descripción**: Actualiza estado de tarea
-
-#### Componentes Internos:
-
-##### `TaskCard({ task })`
-- **Descripción**: Tarjeta de tarea
-- **Características**:
-  - Estado y prioridad visual
-  - Progreso de envíos
-  - Fechas límite
-
-##### `CreateTaskModal()`
-- **Descripción**: Modal para crear tareas
-- **Campos**:
-  - Título y descripción
-  - Grupo asignado
-  - Usuarios específicos
-  - Fecha límite
-  - Prioridad y categoría
-
-##### `EvaluateTaskModal()`
-- **Descripción**: Modal de evaluación
-- **Características**:
-  - Lista de envíos
-  - Sistema de calificación
-  - Retroalimentación
-
----
-
-### 📊 AnalyticsView (views/AnalyticsView.jsx)
-
-**Propósito**: Dashboard de analíticas y métricas (Solo Admin).
-
-#### Clase: AnalyticsView
-- **Ruta**: `views/AnalyticsView.jsx`
-- **Descripción**: Vista de analíticas
-- **Rutas**: `/admin/analytics`
-- **Acceso**: Solo administradores
-
-#### Funciones Principales:
-
-##### `exportData(format)`
-- **Parámetros**:
-  - `format` (string): Formato de exportación
-- **Retorna**: void
-- **Descripción**: Exporta datos analíticos
-
-#### Componentes Internos:
-
-##### `StatCard({ title, value, icon, color, trend, subtitle })`
-- **Descripción**: Tarjeta de estadística avanzada
-- **Características**:
-  - Tendencias
-  - Subtítulos informativos
-  - Colores temáticos
-
-##### `SimpleBarChart({ data, title, color })`
-- **Descripción**: Gráfico de barras simple
-- **Características**:
-  - Datos responsivos
-  - Colores personalizables
-
-##### `LineChart({ data, title, color })`
-- **Descripción**: Gráfico de líneas
-- **Características**:
-  - Tendencias temporales
-  - Interactividad hover
-
----
-
-### 👤 ProfileView (views/ProfileView.jsx)
-
-**Propósito**: Gestión de perfil de usuario.
-
-#### Clase: ProfileView
-- **Ruta**: `views/ProfileView.jsx`
-- **Descripción**: Vista de perfil de usuario
-- **Rutas**: `/profile`
-
-#### Funciones Principales:
-
-##### `handleSaveProfile()`
-- **Parámetros**: Ninguno
-- **Retorna**: void
-- **Descripción**: Guarda cambios del perfil
-
-##### `handleCancelEdit()`
-- **Parámetros**: Ninguno
-- **Retorna**: void
-- **Descripción**: Cancela edición del perfil
-
-#### Componentes Internos:
-
-##### `PasswordChangeModal()`
-- **Descripción**: Modal para cambio de contraseña
-- **Características**:
-  - Validación de contraseña actual
-  - Confirmación de nueva contraseña
-  - Visibilidad de contraseñas
-
-##### `DeleteAccountModal()`
-- **Descripción**: Modal para eliminar cuenta
-- **Características**:
-  - Confirmación por texto
-  - Advertencias de seguridad
-
----
-
-### ⚙️ SettingsView (views/SettingsView.jsx)
-
-**Propósito**: Configuración del sistema (Solo Admin).
-
-#### Clase: SettingsView
-- **Ruta**: `views/SettingsView.jsx`
-- **Descripción**: Vista de configuración del sistema
-- **Rutas**: `/settings`
-- **Acceso**: Solo administradores
-
-#### Funciones Principales:
-
-##### `handleSaveSettings(section)`
-- **Parámetros**:
-  - `section` (string): Sección a guardar
-- **Retorna**: Promise
-- **Descripción**: Guarda configuración de sección específica
-
-##### `handleTestEmail()`
-- **Parámetros**: Ninguno
-- **Retorna**: Promise
-- **Descripción**: Envía email de prueba
-
-##### `handleResetSection(section)`
-- **Parámetros**:
-  - `section` (string): Sección a resetear
-- **Retorna**: void
-- **Descripción**: Resetea sección a valores por defecto
-
----
-
-### 🔍 GlobalSearch (components/GlobalSearch.jsx)
-
-**Propósito**: Búsqueda global con atajos de teclado.
-
-#### Clase: GlobalSearch
-- **Ruta**: `components/GlobalSearch.jsx`
-- **Descripción**: Componente de búsqueda global
-- **Atajo**: `Cmd/Ctrl + K`
-
-#### Funciones Principales:
-
-##### `performSearch(query, type)`
-- **Parámetros**:
-  - `query` (string): Término de búsqueda
-  - `type` (string): Tipo de búsqueda
-- **Retorna**: Array de resultados
-- **Descripción**: Ejecuta búsqueda en diferentes tipos de datos
-
-##### `handleResultClick(result)`
-- **Parámetros**:
-  - `result` (object): Resultado seleccionado
-- **Retorna**: void
-- **Descripción**: Navega al resultado seleccionado
-
----
-
-### 📋 ReportGenerator (components/ReportGenerator.jsx)
-
-**Propósito**: Generación de reportes personalizables.
-
-#### Clase: ReportGenerator
-- **Ruta**: `components/ReportGenerator.jsx`
-- **Descripción**: Generador de reportes
-- **Atajo**: `Cmd/Ctrl + Shift + R`
-
-#### Funciones Principales:
-
-##### `handleGenerateReport()`
-- **Parámetros**: Ninguno
-- **Retorna**: Promise
-- **Descripción**: Genera y descarga reporte
-- **Flujo**:
-  1. Recopila configuración
-  2. Procesa datos
-  3. Genera archivo
-  4. Inicia descarga
-
----
-
-### 📤 DataExport (components/DataExport.jsx)
-
-**Propósito**: Exportación de datos del sistema.
-
-#### Clase: DataExport
-- **Ruta**: `components/DataExport.jsx`
-- **Descripción**: Exportador de datos
-- **Atajo**: `Cmd/Ctrl + Shift + E`
-
-#### Funciones Principales:
-
-##### `handleExport()`
-- **Parámetros**: Ninguno
-- **Retorna**: Promise
-- **Descripción**: Exporta datos seleccionados
-- **Formatos**: JSON, CSV, XML, Excel
-
----
-
-## 🗄️ Integración con Base de Datos
-
-### Paso 1: Configuración del Backend
-
-#### Crear estructura del servidor
-
-\`\`\`bash
-mkdir backend
-cd backend
-npm init -y
-npm install express mongoose cors dotenv bcryptjs jsonwebtoken multer
-\`\`\`
-
-#### Estructura de archivos del backend:
-
-\`\`\`
-backend/
-├── config/
-│   └── database.js
-├── controllers/
-│   ├── authController.js
-│   ├── fileController.js
-│   ├── groupController.js
-│   ├── evidenceController.js
-│   ├── messageController.js
-│   └── analyticsController.js
-├── models/
-│   ├── User.js
-│   ├── File.js
-│   ├── Group.js
-│   ├── Evidence.js
-│   ├── Message.js
-│   └── Notification.js
-├── routes/
-│   ├── auth.js
-│   ├── files.js
-│   ├── groups.js
-│   ├── evidences.js
-│   ├── messages.js
-│   └── analytics.js
-├── middleware/
-│   ├── auth.js
-│   └── upload.js
-├── uploads/
-└── server.js
-\`\`\`
-
-### Paso 2: Modelos de Base de Datos
-
-#### User.js (models/User.js)
-\`\`\`javascript
-const mongoose = require('mongoose');
-
-const userSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  email: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-  role: { type: String, enum: ['user', 'admin'], default: 'user' },
-  avatar: String,
-  bio: String,
-  phone: String,
-  location: String,
-  socialLinks: {
-    github: String,
-    linkedin: String,
-    website: String
-  },
-  privacy: {
-    profilePublic: { type: Boolean, default: true },
-    showInSearch: { type: Boolean, default: true },
-    allowMessages: { type: Boolean, default: true }
-  },
-  stats: {
-    filesUploaded: { type: Number, default: 0 },
-    evidencesSubmitted: { type: Number, default: 0 },
-    groupsJoined: { type: Number, default: 0 },
-    averageRating: { type: Number, default: 0 }
-  }
-}, { timestamps: true });
-
-module.exports = mongoose.model('User', userSchema);
-\`\`\`
-
-#### File.js (models/File.js)
-\`\`\`javascript
-const mongoose = require('mongoose');
-
-const fileSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  originalName: { type: String, required: true },
-  path: { type: String, required: true },
-  size: { type: Number, required: true },
-  mimeType: { type: String, required: true },
-  category: { type: String, required: true },
-  author: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  group: { type: mongoose.Schema.Types.ObjectId, ref: 'Group' },
-  status: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' },
-  tags: [String],
-  description: String,
-  downloads: { type: Number, default: 0 },
-  likes: { type: Number, default: 0 },
-  comments: [{
-    author: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-    content: String,
-    timestamp: { type: Date, default: Date.now }
-  }]
-}, { timestamps: true });
-
-module.exports = mongoose.model('File', fileSchema);
-\`\`\`
-
-#### Group.js (models/Group.js)
-\`\`\`javascript
-const mongoose = require('mongoose');
-
-const groupSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  description: { type: String, required: true },
-  type: { type: String, enum: ['public', 'private', 'protected'], default: 'public' },
-  category: { type: String, required: true },
-  createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  members: [{
-    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-    role: { type: String, enum: ['admin', 'moderator', 'member'], default: 'member' },
-    joinDate: { type: Date, default: Date.now }
-  }],
-  settings: {
-    maxMembers: { type: Number, default: 50 },
-    allowFileUpload: { type: Boolean, default: true },
-    requireApproval: { type: Boolean, default: false },
-    password: String
-  },
-  stats: {
-    totalUploads: { type: Number, default: 0 },
-    approvedFiles: { type: Number, default: 0 },
-    pendingFiles: { type: Number, default: 0 },
-    rejectedFiles: { type: Number, default: 0 }
-  }
-}, { timestamps: true });
-
-module.exports = mongoose.model('Group', groupSchema);
-\`\`\`
-
-### Paso 3: Controladores
-
-#### authController.js (controllers/authController.js)
-\`\`\`javascript
-const User = require('../models/User');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-
-exports.login = async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(401).json({ success: false, error: 'Invalid credentials' });
-    }
-    
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(401).json({ success: false, error: 'Invalid credentials' });
-    }
-    
-    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '24h' });
-    
-    res.json({
-      success: true,
-      token,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        avatar: user.avatar
-      }
-    });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
+# 📖 Documentación Completa - Sistema de Gestión de Evidencias
+
+## 📋 Tabla de Contenidos
+
+1. [Arquitectura del Sistema](#arquitectura-del-sistema)
+2. [Estructura del Proyecto](#estructura-del-proyecto)
+3. [Componentes Frontend](#componentes-frontend)
+4. [API Backend](#api-backend)
+5. [Base de Datos](#base-de-datos)
+6. [Autenticación y Seguridad](#autenticación-y-seguridad)
+7. [Guías de Desarrollo](#guías-de-desarrollo)
+8. [Troubleshooting](#troubleshooting)
+
+## 🏗️ Arquitectura del Sistema
+
+### Arquitectura General
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    FRONTEND (React + Next.js)              │
+├─────────────────────────────────────────────────────────────┤
+│  • React 19 + Next.js 15                                   │
+│  • React Router DOM para navegación                        │
+│  • Tailwind CSS + shadcn/ui                               │
+│  • Context API para estado global                          │
+│  • Axios para comunicación HTTP                            │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    BACKEND (Node.js + Express)             │
+├─────────────────────────────────────────────────────────────┤
+│  • Express.js 4.18+ como framework web                     │
+│  • JWT para autenticación                                  │
+│  • Socket.IO para tiempo real                              │
+│  • Multer para carga de archivos                           │
+│  • Helmet + CORS para seguridad                            │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    BASES DE DATOS HÍBRIDAS                 │
+├─────────────────────────────────────────────────────────────┤
+│  MongoDB Atlas (Principal)    │    MySQL/XAMPP (Secundaria) │
+│  • Usuarios                   │    • Logs de auditoría      │
+│  • Archivos                   │    • Analytics              │
+│  • Grupos                     │    • Métricas               │
+│  • Mensajes                   │    • Sesiones               │
+│  • Evidencias                 │    • Performance            │
+│  • Notificaciones             │                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Patrones de Diseño Implementados
+
+1. **MVC (Model-View-Controller)**
+   - Models: Esquemas de MongoDB y MySQL
+   - Views: Componentes React
+   - Controllers: Rutas de Express
+
+2. **Repository Pattern**
+   - Abstracción de acceso a datos
+   - Fallback automático entre bases de datos
+
+3. **Middleware Pattern**
+   - Autenticación JWT
+   - Logging de requests
+   - Manejo de errores
+
+4. **Observer Pattern**
+   - Sistema de notificaciones
+   - WebSockets para tiempo real
+
+## 📁 Estructura del Proyecto
+
+```
+reportes/
+├── 📁 frontend/
+│   ├── 📁 components/          # Componentes reutilizables
+│   │   ├── Header.jsx
+│   │   ├── Sidebar.jsx
+│   │   ├── GlobalSearch.jsx
+│   │   ├── NotificationSystem.jsx
+│   │   ├── DataExport.jsx
+│   │   ├── ReportGenerator.jsx
+│   │   └── 📁 ui/             # Componentes UI base (shadcn)
+│   ├── 📁 views/              # Páginas principales
+│   │   ├── LoginView.jsx
+│   │   ├── HomeView.jsx
+│   │   ├── UploadView.jsx
+│   │   ├── FilesView.jsx
+│   │   ├── GroupsView.jsx
+│   │   ├── MessagesView.jsx
+│   │   ├── EvidencesView.jsx
+│   │   ├── AnalyticsView.jsx
+│   │   ├── ProfileView.jsx
+│   │   ├── SettingsView.jsx
+│   │   ├── TasksView.jsx
+│   │   ├── NotificationsView.jsx
+│   │   ├── AdminGroupsView.jsx
+│   │   └── AdminLogsView.jsx
+│   ├── 📁 context/            # Estado global
+│   │   └── AuthContext.js
+│   ├── 📁 services/           # Servicios API
+│   │   └── api.js
+│   ├── 📁 hooks/              # Custom hooks
+│   │   └── use-client.js
+│   ├── 📁 lib/                # Utilidades
+│   │   └── utils.ts
+│   ├── App.jsx                # Componente principal
+│   ├── routes.jsx             # Configuración de rutas
+│   └── 📁 styles/             # Estilos globales
+├── 📁 backend/
+│   ├── 📁 routes/             # Endpoints API
+│   │   ├── auth.js            # Autenticación
+│   │   ├── users.js           # Gestión de usuarios
+│   │   ├── files.js           # Gestión de archivos
+│   │   ├── groups.js          # Gestión de grupos
+│   │   ├── messages.js        # Mensajería
+│   │   ├── evidences.js       # Evidencias
+│   │   ├── notifications.js   # Notificaciones
+│   │   ├── analytics.js       # Analytics
+│   │   └── logs.js            # Logs del sistema
+│   ├── 📁 models/             # Modelos de datos
+│   │   ├── User.js            # Modelo de usuario (MongoDB)
+│   │   ├── File.js            # Modelo de archivo (MongoDB)
+│   │   ├── Group.js           # Modelo de grupo (MongoDB)
+│   │   └── 📁 mysql/          # Modelos MySQL
+│   │       ├── Analytics.js
+│   │       ├── AuditLog.js
+│   │       ├── SystemLog.js
+│   │       ├── UserSession.js
+│   │       └── PerformanceMetric.js
+│   ├── 📁 middleware/         # Middleware personalizado
+│   │   ├── auth.js            # Autenticación JWT
+│   │   ├── errorHandler.js    # Manejo de errores
+│   │   └── logging.js         # Logging de requests
+│   ├── 📁 config/             # Configuraciones
+│   │   ├── database.js        # Configuración BD híbrida
+│   │   └── swagger.js         # Documentación API
+│   ├── 📁 utils/              # Utilidades
+│   │   └── fallbackData.js    # Datos de fallback
+│   ├── 📁 tests/              # Pruebas
+│   │   ├── auth.test.js
+│   │   └── setup.js
+│   ├── 📁 scripts/            # Scripts de utilidad
+│   │   └── init-database.js
+│   ├── 📁 database/           # Esquemas y configuración BD
+│   │   ├── mongodb_schema.js
+│   │   ├── mysql_schema.sql
+│   │   ├── init-databases.js
+│   │   └── README.md
+│   └── server.js              # Servidor principal
+├── 📁 public/                 # Archivos estáticos
+├── 📁 docs/                   # Documentación
+├── package.json               # Dependencias frontend
+├── README.md                  # Documentación principal
+├── CONTRIBUTING.md            # Guía de contribución
+├── LICENSE                    # Licencia MIT
+├── .env.example               # Variables de entorno ejemplo
+└── .gitignore                 # Archivos ignorados por Git
+```
+
+## 🎨 Componentes Frontend
+
+### Componentes Principales
+
+#### 1. **Header.jsx**
+```jsx
+// Barra de navegación superior
+const Header = () => {
+  const { user, logout } = useAuth();
+  
+  return (
+    <header className="bg-white shadow-sm border-b">
+      <div className="flex items-center justify-between px-6 py-4">
+        <div className="flex items-center space-x-4">
+          <Logo />
+          <GlobalSearch />
+        </div>
+        <UserMenu user={user} onLogout={logout} />
+      </div>
+    </header>
+  );
 };
+```
 
-exports.register = async (req, res) => {
-  try {
-    const { name, email, password } = req.body;
-    
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res.status(400).json({ success: false, error: 'User already exists' });
-    }
-    
-    const hashedPassword = await bcrypt.hash(password, 12);
-    
-    const user = new User({
-      name,
-      email,
-      password: hashedPassword
-    });
-    
-    await user.save();
-    
-    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '24h' });
-    
-    res.status(201).json({
-      success: true,
-      token,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role
-      }
-    });
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
-  }
+**Funcionalidades:**
+- Logo y branding
+- Búsqueda global (Cmd/Ctrl + K)
+- Menú de usuario
+- Notificaciones en tiempo real
+
+#### 2. **Sidebar.jsx**
+```jsx
+// Navegación lateral
+const Sidebar = () => {
+  const { user } = useAuth();
+  const location = useLocation();
+  
+  const menuItems = [
+    { path: '/dashboard', icon: Home, label: 'Dashboard' },
+    { path: '/upload', icon: Upload, label: 'Subir Archivos' },
+    { path: '/files', icon: FileText, label: 'Archivos' },
+    { path: '/groups', icon: Users, label: 'Grupos' },
+    { path: '/messages', icon: MessageSquare, label: 'Mensajes' },
+    // ... más items
+  ];
+  
+  return (
+    <aside className="w-64 bg-gray-50 border-r">
+      <nav className="p-4">
+        {menuItems.map(item => (
+          <SidebarItem 
+            key={item.path} 
+            {...item} 
+            isActive={location.pathname === item.path}
+          />
+        ))}
+      </nav>
+    </aside>
+  );
 };
-\`\`\`
+```
 
-### Paso 4: Rutas de API
+**Funcionalidades:**
+- Navegación por secciones
+- Indicador de página activa
+- Iconos con Lucide React
+- Responsive design
 
-#### auth.js (routes/auth.js)
-\`\`\`javascript
-const express = require('express');
-const router = express.Router();
-const authController = require('../controllers/authController');
-
-router.post('/login', authController.login);
-router.post('/register', authController.register);
-
-module.exports = router;
-\`\`\`
-
-### Paso 5: Servidor Principal
-
-#### server.js
-\`\`\`javascript
-const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
-require('dotenv').config();
-
-const app = express();
-
-// Middleware
-app.use(cors());
-app.use(express.json());
-app.use('/uploads', express.static('uploads'));
-
-// Database connection
-mongoose.connect(process.env.MONGODB_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-});
-
-// Routes
-app.use('/api/auth', require('./routes/auth'));
-app.use('/api/files', require('./routes/files'));
-app.use('/api/groups', require('./routes/groups'));
-app.use('/api/evidences', require('./routes/evidences'));
-app.use('/api/messages', require('./routes/messages'));
-app.use('/api/analytics', require('./routes/analytics'));
-
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
-\`\`\`
-
-### Paso 6: Integración Frontend-Backend
-
-#### Crear servicio API (frontend/services/api.js)
-\`\`\`javascript
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
-
-class ApiService {
-  constructor() {
-    this.token = localStorage.getItem('token');
-  }
-
-  async request(endpoint, options = {}) {
-    const url = `${API_BASE_URL}${endpoint}`;
-    const config = {
-      headers: {
-        'Content-Type': 'application/json',
-        ...(this.token && { Authorization: `Bearer ${this.token}` })
-      },
-      ...options
+#### 3. **GlobalSearch.jsx**
+```jsx
+// Búsqueda global avanzada
+const GlobalSearch = () => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState([]);
+  
+  // Atajo de teclado Cmd/Ctrl + K
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setIsOpen(true);
+      }
     };
-
-    const response = await fetch(url, config);
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.error || 'API request failed');
-    }
-
-    return data;
-  }
-
-  // Auth methods
-  async login(email, password) {
-    return this.request('/auth/login', {
-      method: 'POST',
-      body: JSON.stringify({ email, password })
-    });
-  }
-
-  // File methods
-  async uploadFile(formData) {
-    return this.request('/files/upload', {
-      method: 'POST',
-      headers: {
-        ...(this.token && { Authorization: `Bearer ${this.token}` })
-      },
-      body: formData
-    });
-  }
-
-  async getFiles(filters = {}) {
-    const queryString = new URLSearchParams(filters).toString();
-    return this.request(`/files?${queryString}`);
-  }
-
-  // Group methods
-  async getGroups() {
-    return this.request('/groups');
-  }
-
-  async createGroup(groupData) {
-    return this.request('/groups', {
-      method: 'POST',
-      body: JSON.stringify(groupData)
-    });
-  }
-}
-
-export default new ApiService();
-\`\`\`
-
-### Paso 7: Actualizar AuthContext para usar API real
-
-#### Modificar AuthContext.js
-\`\`\`javascript
-import ApiService from '../services/api';
-
-export const AuthProvider = ({ children }) => {
-  // ... estado existente
-
-  const login = async (email, password) => {
-    try {
-      setLoading(true);
-      
-      const response = await ApiService.login(email, password);
-      
-      if (response.success) {
-        localStorage.setItem('user', JSON.stringify(response.user));
-        localStorage.setItem('token', response.token);
-        
-        setUser(response.user);
-        setIsAuthenticated(true);
-        
-        return { success: true, user: response.user };
-      }
-    } catch (error) {
-      return { success: false, error: error.message };
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // ... resto del código
-};
-\`\`\`
-
----
-
-## 📊 Construcción de Gráficos y Visualizaciones
-
-### Paso 1: Instalar librerías de gráficos
-
-\`\`\`bash
-npm install recharts d3 chart.js react-chartjs-2
-\`\`\`
-
-### Paso 2: Componente de gráficos reutilizable
-
-#### ChartComponents.jsx (components/ChartComponents.jsx)
-\`\`\`javascript
-import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-
-export const LineChartComponent = ({ data, xKey, yKey, color = '#8884d8', title }) => (
-  <div className="bg-white p-6 rounded-lg shadow">
-    <h3 className="text-lg font-semibold mb-4">{title}</h3>
-    <ResponsiveContainer width="100%" height={300}>
-      <LineChart data={data}>
-        <CartesianGrid strokeDasharray="3 3" />
-        <XAxis dataKey={xKey} />
-        <YAxis />
-        <Tooltip />
-        <Legend />
-        <Line type="monotone" dataKey={yKey} stroke={color} strokeWidth={2} />
-      </LineChart>
-    </ResponsiveContainer>
-  </div>
-);
-
-export const BarChartComponent = ({ data, xKey, yKey, color = '#8884d8', title }) => (
-  <div className="bg-white p-6 rounded-lg shadow">
-    <h3 className="text-lg font-semibold mb-4">{title}</h3>
-    <ResponsiveContainer width="100%" height={300}>
-      <BarChart data={data}>
-        <CartesianGrid strokeDasharray="3 3" />
-        <XAxis dataKey={xKey} />
-        <YAxis />
-        <Tooltip />
-        <Legend />
-        <Bar dataKey={yKey} fill={color} />
-      </BarChart>
-    </ResponsiveContainer>
-  </div>
-);
-
-export const PieChartComponent = ({ data, dataKey, nameKey, colors, title }) => (
-  <div className="bg-white p-6 rounded-lg shadow">
-    <h3 className="text-lg font-semibold mb-4">{title}</h3>
-    <ResponsiveContainer width="100%" height={300}>
-      <PieChart>
-        <Pie
-          data={data}
-          cx="50%"
-          cy="50%"
-          labelLine={false}
-          label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-          outerRadius={80}
-          fill="#8884d8"
-          dataKey={dataKey}
-        >
-          {data.map((entry, index) => (
-            <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
+    
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, []);
+  
+  return (
+    <CommandDialog open={isOpen} onOpenChange={setIsOpen}>
+      <CommandInput 
+        placeholder="Buscar archivos, grupos, usuarios..."
+        value={query}
+        onValueChange={setQuery}
+      />
+      <CommandList>
+        <CommandEmpty>No se encontraron resultados.</CommandEmpty>
+        <CommandGroup heading="Archivos">
+          {results.files?.map(file => (
+            <CommandItem key={file.id}>
+              <FileIcon className="mr-2 h-4 w-4" />
+              {file.name}
+            </CommandItem>
           ))}
-        </Pie>
-        <Tooltip />
-      </PieChart>
-    </ResponsiveContainer>
-  </div>
-);
-\`\`\`
+        </CommandGroup>
+        {/* Más grupos de resultados */}
+      </CommandList>
+    </CommandDialog>
+  );
+};
+```
 
-### Paso 3: Integrar gráficos en AnalyticsView
+**Funcionalidades:**
+- Búsqueda en tiempo real
+- Resultados categorizados
+- Navegación por teclado
+- Atajo Cmd/Ctrl + K
 
-\`\`\`javascript
-import { LineChartComponent, BarChartComponent, PieChartComponent } from '../components/ChartComponents';
+### Vistas Principales
 
-// En AnalyticsView.jsx
-const renderCharts = () => (
-  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-    <LineChartComponent
-      data={analytics.fileStats?.uploadTrend}
-      xKey="date"
-      yKey="uploads"
-      color="#3B82F6"
-      title="Tendencia de Subidas"
-    />
-    <BarChartComponent
-      data={analytics.fileStats?.byType}
-      xKey="type"
-      yKey="count"
-      color="#10B981"
-      title="Archivos por Tipo"
-    />
-    <PieChartComponent
-      data={analytics.groupStats?.mostActive}
-      dataKey="activity"
-      nameKey="name"
-      colors={['#3B82F6', '#10B981', '#F59E0B', '#EF4444']}
-      title="Grupos Más Activos"
-    />
-  </div>
-);
-\`\`\`
+#### 1. **HomeView.jsx - Dashboard**
+```jsx
+const HomeView = () => {
+  const [stats, setStats] = useState(null);
+  const [recentFiles, setRecentFiles] = useState([]);
+  const [analytics, setAnalytics] = useState(null);
+  
+  return (
+    <Layout>
+      <div className="p-6">
+        <h1 className="text-2xl font-bold mb-6">Dashboard</h1>
+        
+        {/* Métricas principales */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <StatCard 
+            title="Total Archivos" 
+            value={stats?.totalFiles} 
+            icon={FileText}
+            trend="+12%"
+          />
+          <StatCard 
+            title="Grupos Activos" 
+            value={stats?.activeGroups} 
+            icon={Users}
+            trend="+5%"
+          />
+          <StatCard 
+            title="Mensajes Hoy" 
+            value={stats?.todayMessages} 
+            icon={MessageSquare}
+            trend="+23%"
+          />
+          <StatCard 
+            title="Usuarios Online" 
+            value={stats?.onlineUsers} 
+            icon={Activity}
+            trend="+8%"
+          />
+        </div>
+        
+        {/* Gráficos y tablas */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Actividad Reciente</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ActivityChart data={analytics?.activity} />
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader>
+              <CardTitle>Archivos Recientes</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <RecentFilesList files={recentFiles} />
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </Layout>
+  );
+};
+```
 
----
+#### 2. **FilesView.jsx - Gestión de Archivos**
+```jsx
+const FilesView = () => {
+  const [files, setFiles] = useState([]);
+  const [filters, setFilters] = useState({});
+  const [viewMode, setViewMode] = useState('grid'); // grid | list
+  
+  return (
+    <Layout>
+      <div className="p-6">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold">Gestión de Archivos</h1>
+          <div className="flex space-x-2">
+            <Button onClick={() => navigate('/upload')}>
+              <Upload className="w-4 h-4 mr-2" />
+              Subir Archivo
+            </Button>
+            <DataExport data={files} />
+          </div>
+        </div>
+        
+        {/* Filtros */}
+        <FileFilters 
+          filters={filters} 
+          onFiltersChange={setFilters}
+        />
+        
+        {/* Vista de archivos */}
+        <div className="mt-6">
+          {viewMode === 'grid' ? (
+            <FileGrid files={files} />
+          ) : (
+            <FileList files={files} />
+          )}
+        </div>
+      </div>
+    </Layout>
+  );
+};
+```
 
-## 🚀 Preparación para Repositorio
+## 🔧 API Backend
 
-### Paso 1: Estructura final del proyecto
+### Estructura de Rutas
 
-\`\`\`
-evidence-management-platform/
-├── frontend/                   # Aplicación React
-│   ├── public/
-│   ├── src/
-│   ├── package.json
-│   └── README.md
-├── backend/                    # Servidor Node.js
-│   ├── config/
-│   ├── controllers/
-│   ├── models/
-│   ├── routes/
-│   ├── middleware/
-│   ├── uploads/
-│   ├── package.json
-│   └── README.md
-├── docs/                       # Documentación
-│   ├── DOCUMENTACION_COMPLETA.md
-│   ├── API_REFERENCE.md
-│   └── DEPLOYMENT_GUIDE.md
-├── .gitignore
-├── README.md
-├── docker-compose.yml
-└── package.json
-\`\`\`
-
-### Paso 2: README.md principal
-
-\`\`\`markdown
-# 🛡️ Sistema de Gestión de Evidencias
-
-## 📋 Descripción
-
-Sistema completo de gestión de evidencias con funcionalidades avanzadas de colaboración, evaluación y análisis. Desarrollado con React.js y Node.js.
-
-## ✨ Características Principales
-
-- 🔐 **Autenticación segura** con roles de usuario
-- 📤 **Carga de archivos** con soporte para 100+ tipos
-- 👥 **Gestión de grupos** colaborativos
-- 🛡️ **Evaluación de evidencias** con sistema de calificación
-- 💬 **Mensajería en tiempo real**
-- 📊 **Dashboard analítico** con métricas avanzadas
-- 🔍 **Búsqueda global** con filtros inteligentes
-- 📋 **Generación de reportes** personalizables
-- 📱 **Diseño responsivo** para todos los dispositivos
-
-## 🚀 Inicio Rápido
-
-### Prerrequisitos
-- Node.js 16+
-- MongoDB 4.4+
-- npm o yarn
-
-### Instalación
-
-1. **Clonar el repositorio**
-\`\`\`bash
-git clone https://github.com/tu-usuario/evidence-management-platform.git
-cd evidence-management-platform
-\`\`\`
-
-2. **Instalar dependencias del backend**
-\`\`\`bash
-cd backend
-npm install
-\`\`\`
-
-3. **Instalar dependencias del frontend**
-\`\`\`bash
-cd ../frontend
-npm install
-\`\`\`
-
-4. **Configurar variables de entorno**
-\`\`\`bash
-# Backend (.env)
-MONGODB_URI=mongodb://localhost:27017/evidence_management
-JWT_SECRET=tu_jwt_secret_aqui
-PORT=5000
-
-# Frontend (.env)
-REACT_APP_API_URL=http://localhost:5000/api
-\`\`\`
-
-5. **Iniciar la aplicación**
-\`\`\`bash
-# Terminal 1 - Backend
-cd backend
-npm run dev
-
-# Terminal 2 - Frontend
-cd frontend
-npm start
-\`\`\`
-
-## 📚 Documentación
-
-- [Documentación Completa](docs/DOCUMENTACION_COMPLETA.md)
-- [Referencia de API](docs/API_REFERENCE.md)
-- [Guía de Despliegue](docs/DEPLOYMENT_GUIDE.md)
-
-## 🏗️ Arquitectura
-
-\`\`\`
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   React.js      │    │   Node.js       │    │   MongoDB       │
-│   Frontend      │◄──►│   Backend       │◄──►│   Database      │
-│                 │    │                 │    │                 │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-\`\`\`
-
-## 🛠️ Tecnologías Utilizadas
-
-### Frontend
-- React.js 18
-- React Router DOM
-- Tailwind CSS
-- Lucide React (iconos)
-- Recharts (gráficos)
-
-### Backend
-- Node.js
-- Express.js
-- MongoDB con Mongoose
-- JWT para autenticación
-- Multer para carga de archivos
-- bcryptjs para encriptación
-
-## 📱 Capturas de Pantalla
-
-### Dashboard Principal
-![Dashboard](screenshots/dashboard.png)
-
-### Gestión de Archivos
-![Files](screenshots/files.png)
-
-### Sistema de Mensajería
-![Messages](screenshots/messages.png)
-
-## 🤝 Contribución
-
-1. Fork el proyecto
-2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
-3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
-4. Push a la rama (`git push origin feature/AmazingFeature`)
-5. Abre un Pull Request
-
-## 📄 Licencia
-
-Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) para detalles.
-
-## 👥 Autores
-
-- **Tu Nombre** - *Desarrollo inicial* - [TuGitHub](https://github.com/tu-usuario)
-
-## 🙏 Agradecimientos
-
-- Equipo de desarrollo
-- Comunidad de código abierto
-- Contribuidores del proyecto
-\`\`\`
-
-### Paso 3: .gitignore
-
-\`\`\`gitignore
-# Dependencies
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# Production builds
-/frontend/build
-/backend/dist
-
-# Environment variables
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-
-# Database
-*.db
-*.sqlite
-
-# Uploads
-/backend/uploads/*
-!/backend/uploads/.gitkeep
-
-# Logs
-logs
-*.log
-
-# Runtime data
-pids
-*.pid
-*.seed
-*.pid.lock
-
-# Coverage directory used by tools like istanbul
-coverage/
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Temporary files
-*.tmp
-*.temp
-\`\`\`
-
-### Paso 4: package.json raíz
-
-\`\`\`json
+#### 1. **Autenticación (/api/v1/auth)**
+```javascript
+// POST /api/v1/auth/login
 {
-  "name": "evidence-management-platform",
-  "version": "1.0.0",
-  "description": "Sistema completo de gestión de evidencias",
-  "main": "index.js",
-  "scripts": {
-    "dev": "concurrently \"npm run server\" \"npm run client\"",
-    "server": "cd backend && npm run dev",
-    "client": "cd frontend && npm start",
-    "build": "cd frontend && npm run build",
-    "install-deps": "npm install && cd backend && npm install && cd ../frontend && npm install"
-  },
-  "keywords": [
-    "evidence-management",
-    "react",
-    "nodejs",
-    "mongodb",
-    "collaboration"
-  ],
-  "author": "Tu Nombre",
-  "license": "MIT",
-  "devDependencies": {
-    "concurrently": "^7.6.0"
-  }
+  "email": "user@example.com",
+  "password": "password123"
 }
-\`\`\`
 
-### Paso 5: Docker Compose (Opcional)
-
-\`\`\`yaml
-version: '3.8'
-
-services:
-  mongodb:
-    image: mongo:4.4
-    container_name: evidence_mongodb
-    restart: unless-stopped
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongodb_data:/data/db
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: admin
-      MONGO_INITDB_ROOT_PASSWORD: password
-
-  backend:
-    build: ./backend
-    container_name: evidence_backend
-    restart: unless-stopped
-    ports:
-      - "5000:5000"
-    depends_on:
-      - mongodb
-    environment:
-      MONGODB_URI: mongodb://admin:password@mongodb:27017/evidence_management?authSource=admin
-      JWT_SECRET: your_jwt_secret_here
-    volumes:
-      - ./backend/uploads:/app/uploads
-
-  frontend:
-    build: ./frontend
-    container_name: evidence_frontend
-    restart: unless-stopped
-    ports:
-      - "3000:3000"
-    depends_on:
-      - backend
-    environment:
-      REACT_APP_API_URL: http://localhost:5000/api
-
-volumes:
-  mongodb_data:
-\`\`\`
-
-### Paso 6: Scripts de despliegue
-
-#### deploy.sh
-\`\`\`bash
-#!/bin/bash
-
-echo "🚀 Iniciando despliegue..."
-
-# Instalar dependencias
-echo "📦 Instalando dependencias..."
-npm run install-deps
-
-# Construir frontend
-echo "🏗️ Construyendo frontend..."
-cd frontend && npm run build
-
-# Iniciar servicios con Docker
-echo "🐳 Iniciando servicios..."
-cd .. && docker-compose up -d
-
-echo "✅ Despliegue completado!"
-echo "🌐 Frontend: http://localhost:3000"
-echo "🔧 Backend: http://localhost:5000"
-echo "🗄️ MongoDB: mongodb://localhost:27017"
-\`\`\`
-
-### Paso 7: Documentación de API
-
-#### API_REFERENCE.md
-\`\`\`markdown
-# 📚 Referencia de API
-
-## Autenticación
-
-### POST /api/auth/login
-Autentica un usuario y retorna un token JWT.
-
-**Parámetros:**
-\`\`\`json
-{
-  "email": "string",
-  "password": "string"
-}
-\`\`\`
-
-**Respuesta:**
-\`\`\`json
+// Respuesta
 {
   "success": true,
-  "token": "jwt_token",
-  "user": {
-    "id": "user_id",
-    "name": "string",
-    "email": "string",
-    "role": "user|admin"
+  "data": {
+    "user": {
+      "id": "user_id",
+      "email": "user@example.com",
+      "firstName": "John",
+      "lastName": "Doe",
+      "role": "user"
+    },
+    "tokens": {
+      "accessToken": "jwt_token",
+      "refreshToken": "refresh_token"
+    }
   }
 }
-\`\`\`
+```
 
-## Archivos
-
-### GET /api/files
-Obtiene lista de archivos con filtros opcionales.
-
-**Parámetros de consulta:**
-- `page`: Número de página (default: 1)
-- `limit`: Archivos por página (default: 20)
-- `category`: Filtrar por categoría
-- `status`: Filtrar por estado
-
-### POST /api/files/upload
-Sube uno o más archivos.
-
-**Headers:**
-- `Authorization: Bearer <token>`
-- `Content-Type: multipart/form-data`
-
-**Body:**
-- `files`: Archivos a subir
-- `title`: Título del archivo
-- `description`: Descripción
-- `tags`: Tags separados por coma
-
-## Grupos
-
-### GET /api/groups
-Obtiene lista de grupos.
-
-### POST /api/groups
-Crea un nuevo grupo.
-
-**Body:**
-\`\`\`json
+#### 2. **Gestión de Archivos (/api/v1/files)**
+```javascript
+// GET /api/v1/files
+// Respuesta
 {
-  "name": "string",
-  "description": "string",
-  "type": "public|private|protected",
-  "category": "string",
-  "password": "string (opcional)"
+  "success": true,
+  "data": {
+    "files": [
+      {
+        "id": "file_id",
+        "filename": "document.pdf",
+        "originalName": "Important Document.pdf",
+        "size": 1024000,
+        "mimeType": "application/pdf",
+        "uploadedBy": "user_id",
+        "createdAt": "2024-01-01T00:00:00Z",
+        "tags": ["important", "document"],
+        "category": "document"
+      }
+    ],
+    "pagination": {
+      "page": 1,
+      "limit": 20,
+      "total": 100,
+      "pages": 5
+    }
+  }
 }
-\`\`\`
-\`\`\`
+```
+
+### Middleware de Seguridad
+
+#### 1. **Autenticación JWT**
+```javascript
+const authenticateToken = (req, res, next) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+  
+  if (!token) {
+    return res.status(401).json({
+      success: false,
+      message: 'Token de acceso requerido'
+    });
+  }
+  
+  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+    if (err) {
+      return res.status(403).json({
+        success: false,
+        message: 'Token inválido'
+      });
+    }
+    
+    req.user = user;
+    next();
+  });
+};
+```
+
+#### 2. **Rate Limiting**
+```javascript
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  max: 100, // máximo 100 requests por ventana
+  message: {
+    error: 'Demasiadas solicitudes, intente más tarde',
+    code: 'RATE_LIMIT_EXCEEDED'
+  }
+});
+```
+
+## 🗄️ Base de Datos
+
+### MongoDB Collections
+
+#### 1. **users**
+```javascript
+{
+  _id: ObjectId,
+  email: String, // único, requerido
+  password: String, // hasheado con bcrypt
+  firstName: String,
+  lastName: String,
+  role: String, // 'admin', 'user', 'analyst', 'investigator'
+  department: String,
+  position: String,
+  avatar: String, // URL del avatar
+  isActive: Boolean,
+  lastLogin: Date,
+  notificationSettings: {
+    email: Boolean,
+    push: Boolean,
+    desktop: Boolean
+  },
+  privacySettings: {
+    profileVisible: Boolean,
+    showOnlineStatus: Boolean
+  },
+  createdAt: Date,
+  updatedAt: Date
+}
+```
+
+#### 2. **files**
+```javascript
+{
+  _id: ObjectId,
+  filename: String, // nombre único del archivo
+  originalName: String, // nombre original
+  path: String, // ruta en el sistema de archivos
+  url: String, // URL pública (si aplica)
+  size: Number, // tamaño en bytes
+  mimeType: String,
+  category: String, // 'document', 'image', 'video', 'audio', 'other'
+  tags: [String], // etiquetas para búsqueda
+  description: String,
+  uploadedBy: ObjectId, // referencia a users
+  isPublic: Boolean,
+  accessLevel: String, // 'public', 'internal', 'restricted', 'confidential'
+  downloadCount: Number,
+  viewCount: Number,
+  lastAccessed: Date,
+  metadata: {
+    width: Number, // para imágenes
+    height: Number, // para imágenes
+    duration: Number, // para videos/audio
+    pages: Number // para documentos
+  },
+  status: String, // 'active', 'archived', 'deleted'
+  version: Number,
+  parentFile: ObjectId, // para versiones
+  createdAt: Date,
+  updatedAt: Date,
+  deletedAt: Date
+}
+```
+
+### MySQL Tables
+
+#### 1. **audit_logs**
+```sql
+CREATE TABLE audit_logs (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  user_id VARCHAR(50),
+  action VARCHAR(100) NOT NULL,
+  resource_type VARCHAR(50),
+  resource_id VARCHAR(50),
+  old_values JSON,
+  new_values JSON,
+  ip_address VARCHAR(45),
+  user_agent TEXT,
+  timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_user_id (user_id),
+  INDEX idx_action (action),
+  INDEX idx_timestamp (timestamp)
+);
+```
+
+#### 2. **analytics**
+```sql
+CREATE TABLE analytics (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  metric_name VARCHAR(100) NOT NULL,
+  metric_value DECIMAL(15,2),
+  dimensions JSON,
+  date_recorded DATE NOT NULL,
+  hour_recorded TINYINT,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_metric_date (metric_name, date_recorded),
+  INDEX idx_date (date_recorded)
+);
+```
+
+## 🔐 Autenticación y Seguridad
+
+### Sistema JWT
+
+#### 1. **Generación de Tokens**
+```javascript
+const generateTokens = (user) => {
+  const payload = {
+    id: user._id,
+    email: user.email,
+    role: user.role
+  };
+  
+  const accessToken = jwt.sign(
+    payload,
+    process.env.JWT_SECRET,
+    { expiresIn: process.env.JWT_EXPIRE || '24h' }
+  );
+  
+  const refreshToken = jwt.sign(
+    payload,
+    process.env.JWT_REFRESH_SECRET,
+    { expiresIn: process.env.JWT_REFRESH_EXPIRE || '7d' }
+  );
+  
+  return { accessToken, refreshToken };
+};
+```
+
+#### 2. **Middleware de Autorización**
+```javascript
+const requireRole = (roles) => {
+  return (req, res, next) => {
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        message: 'No autenticado'
+      });
+    }
+    
+    if (!roles.includes(req.user.role)) {
+      return res.status(403).json({
+        success: false,
+        message: 'Permisos insuficientes'
+      });
+    }
+    
+    next();
+  };
+};
+
+// Uso
+router.get('/admin/users', 
+  authenticateToken, 
+  requireRole(['admin']), 
+  getUsersController
+);
+```
+
+### Seguridad Implementada
+
+1. **Helmet.js** - Headers de seguridad
+2. **CORS** - Control de acceso entre dominios
+3. **Rate Limiting** - Prevención de ataques DDoS
+4. **Input Validation** - Validación con Joi
+5. **SQL Injection Prevention** - Uso de ORMs
+6. **XSS Protection** - Sanitización de inputs
+7. **HTTPS Enforcement** - En producción
+
+## 🧪 Testing
+
+### Configuración Jest
+
+```javascript
+// jest.config.js
+module.exports = {
+  testEnvironment: 'node',
+  testMatch: [
+    '**/tests/**/*.test.js',
+    '**/tests/**/*.spec.js'
+  ],
+  collectCoverageFrom: [
+    'routes/**/*.js',
+    'middleware/**/*.js',
+    'config/**/*.js',
+    'utils/**/*.js'
+  ],
+  coverageDirectory: 'coverage',
+  setupFilesAfterEnv: ['<rootDir>/tests/setup.js']
+};
+```
+
+### Ejemplo de Test
+
+```javascript
+describe('Authentication', () => {
+  test('should login with valid credentials', async () => {
+    const response = await request(app)
+      .post('/api/v1/auth/login')
+      .send({
+        email: 'test@example.com',
+        password: 'password123'
+      });
+    
+    expect(response.status).toBe(200);
+    expect(response.body.success).toBe(true);
+    expect(response.body.data.tokens).toBeDefined();
+  });
+});
+```
+
+## 🚀 Despliegue
+
+### Variables de Entorno Requeridas
+
+```env
+# Servidor
+NODE_ENV=production
+PORT=5001
+
+# Base de Datos
+MONGODB_URI=mongodb+srv://...
+MYSQL_HOST=localhost
+MYSQL_DATABASE=evidence_management
+
+# JWT
+JWT_SECRET=your-secret-key
+JWT_REFRESH_SECRET=your-refresh-secret
+
+# Archivos
+MAX_FILE_SIZE=2147483648
+AWS_S3_BUCKET=your-bucket
+
+# Email
+SMTP_HOST=smtp.gmail.com
+SMTP_USER=your-email@gmail.com
+```
+
+### Scripts de Despliegue
+
+```bash
+# Construcción
+npm run build
+
+# Inicio en producción
+npm start
+
+# Con PM2
+pm2 start server.js --name "evidence-api"
+```
+
+## 🔧 Troubleshooting
+
+### Problemas Comunes
+
+1. **Error de conexión a MongoDB**
+   - Verificar URI de conexión
+   - Comprobar whitelist de IPs en Atlas
+   - Validar credenciales
+
+2. **Error de CORS**
+   - Configurar CORS_ORIGINS en .env
+   - Verificar headers de requests
+
+3. **Archivos no se suben**
+   - Verificar permisos de carpeta uploads/
+   - Comprobar MAX_FILE_SIZE
+   - Validar tipos de archivo permitidos
+
+### Logs y Monitoreo
+
+```javascript
+// Configuración de logs
+const winston = require('winston');
+
+const logger = winston.createLogger({
+  level: 'info',
+  format: winston.format.json(),
+  transports: [
+    new winston.transports.File({ filename: 'error.log', level: 'error' }),
+    new winston.transports.File({ filename: 'combined.log' })
+  ]
+});
+```
 
 ---
 
-## 🎯 Conclusión
+## 📞 Soporte
 
-Esta documentación proporciona una guía completa para:
-
-1. **Entender la arquitectura** del sistema
-2. **Mantener y extender** el código existente
-3. **Integrar con base de datos** real
-4. **Construir el backend** completo
-5. **Desplegar la aplicación** en producción
-6. **Contribuir al proyecto** de manera efectiva
-
-El sistema está diseñado para ser escalable, mantenible y fácil de extender con nuevas funcionalidades.
+Para más información o soporte técnico:
+- 📧 Email: support@evidence-platform.com
+- 📖 Wiki: [GitHub Wiki](https://github.com/tu-usuario/evidence-management-platform/wiki)
+- 🐛 Issues: [GitHub Issues](https://github.com/tu-usuario/evidence-management-platform/issues)

@@ -48,6 +48,140 @@ app.get('/health', (req, res) => {
 describe('Authentication Endpoints', () => {
   let authToken;
   let refreshToken;
+  let testUser = {
+    email: 'test@example.com',
+    password: 'testPassword123',
+    firstName: 'Test',
+    lastName: 'User'
+  };
+
+  beforeEach(async () => {
+    // Reset test data before each test
+    authToken = null;
+    refreshToken = null;
+  });
+
+  describe('POST /api/v1/auth/login', () => {
+    test('should login with valid credentials', async () => {
+      const response = await request(app)
+        .post('/api/v1/auth/login')
+        .send({
+          email: 'admin@company.com',
+          password: 'admin123'
+        });
+
+      expect(response.status).toBe(200);
+      expect(response.body.success).toBe(true);
+      expect(response.body.data.tokens).toBeDefined();
+      expect(response.body.data.tokens.accessToken).toBeDefined();
+      expect(response.body.data.tokens.refreshToken).toBeDefined();
+      expect(response.body.data.user).toBeDefined();
+      expect(response.body.data.user.email).toBe('admin@company.com');
+
+      // Store tokens for other tests
+      authToken = response.body.data.tokens.accessToken;
+      refreshToken = response.body.data.tokens.refreshToken;
+    });
+
+    test('should fail with invalid credentials', async () => {
+      const response = await request(app)
+        .post('/api/v1/auth/login')
+        .send({
+          email: 'invalid@example.com',
+          password: 'wrongpassword'
+        });
+
+      expect(response.status).toBe(401);
+      expect(response.body.success).toBe(false);
+      expect(response.body.error).toBeDefined();
+    });
+
+    test('should fail with missing email', async () => {
+      const response = await request(app)
+        .post('/api/v1/auth/login')
+        .send({
+          password: 'password123'
+        });
+
+      expect(response.status).toBe(400);
+      expect(response.body.success).toBe(false);
+    });
+
+    test('should fail with missing password', async () => {
+      const response = await request(app)
+        .post('/api/v1/auth/login')
+        .send({
+          email: 'test@example.com'
+        });
+
+      expect(response.status).toBe(400);
+      expect(response.body.success).toBe(false);
+    });
+  });
+
+  describe('POST /api/v1/auth/refresh', () => {
+    beforeEach(async () => {
+      // Login first to get refresh token
+      const loginResponse = await request(app)
+        .post('/api/v1/auth/login')
+        .send({
+          email: 'admin@company.com',
+          password: 'admin123'
+        });
+
+      refreshToken = loginResponse.body.data.tokens.refreshToken;
+    });
+
+    test('should refresh token with valid refresh token', async () => {
+      const response = await request(app)
+        .post('/api/v1/auth/refresh')
+        .send({
+          refreshToken: refreshToken
+        });
+
+      expect(response.status).toBe(200);
+      expect(response.body.success).toBe(true);
+      expect(response.body.data.accessToken).toBeDefined();
+    });
+
+    test('should fail with invalid refresh token', async () => {
+      const response = await request(app)
+        .post('/api/v1/auth/refresh')
+        .send({
+          refreshToken: 'invalid_token'
+        });
+
+      expect(response.status).toBe(401);
+      expect(response.body.success).toBe(false);
+    });
+  });
+
+  describe('POST /api/v1/auth/logout', () => {
+    beforeEach(async () => {
+      // Login first
+      const loginResponse = await request(app)
+        .post('/api/v1/auth/login')
+        .send({
+          email: 'admin@company.com',
+          password: 'admin123'
+        });
+
+      authToken = loginResponse.body.data.tokens.accessToken;
+      refreshToken = loginResponse.body.data.tokens.refreshToken;
+    });
+
+    test('should logout successfully', async () => {
+      const response = await request(app)
+        .post('/api/v1/auth/logout')
+        .set('Authorization', `Bearer ${authToken}`)
+        .send({
+          refreshToken: refreshToken
+        });
+
+      expect(response.status).toBe(200);
+      expect(response.body.success).toBe(true);
+    });
+  });
 
   beforeAll(async () => {
     // Ensure server is ready
