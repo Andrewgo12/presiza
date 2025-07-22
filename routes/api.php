@@ -57,31 +57,23 @@ Route::prefix('v1')->middleware(['auth:sanctum', 'throttle:120,1'])->group(funct
     });
 });
 
-// Additional API routes
-Route::prefix('v1')->group(function () {
-    // Public routes
-    Route::get('/ping', [App\Http\Controllers\Api\ApiController::class, 'ping']);
-    Route::get('/system/status', [App\Http\Controllers\Api\ApiController::class, 'systemStatus']);
-
-    // Protected routes
-    Route::middleware('auth:sanctum')->group(function () {
-        Route::get('/profile', [App\Http\Controllers\Api\ApiController::class, 'profile']);
-        Route::patch('/profile/preferences', [App\Http\Controllers\Api\ApiController::class, 'updatePreferences']);
-
-        Route::get('/search', [App\Http\Controllers\Api\ApiController::class, 'search']);
-
-        Route::get('/notifications', [App\Http\Controllers\Api\ApiController::class, 'notifications']);
-        Route::patch('/notifications/{id}/read', [App\Http\Controllers\Api\ApiController::class, 'markNotificationAsRead']);
-        Route::patch('/notifications/read-all', [App\Http\Controllers\Api\ApiController::class, 'markAllNotificationsAsRead']);
-    });
-});
-
-// Dashboard API routes
+// Enhanced API routes with ApiController
 Route::middleware('auth:sanctum')->prefix('dashboard')->group(function () {
     Route::get('/stats', [App\Http\Controllers\Api\ApiController::class, 'dashboardStats']);
 });
 
-// Notifications API (legacy support)
 Route::middleware('auth:sanctum')->prefix('notifications')->group(function () {
     Route::get('/unread-count', [App\Http\Controllers\Api\ApiController::class, 'unreadNotificationsCount']);
+    Route::get('/', [App\Http\Controllers\Api\ApiController::class, 'notifications']);
+    Route::patch('/{id}/read', [App\Http\Controllers\Api\ApiController::class, 'markNotificationAsRead']);
+    Route::patch('/read-all', [App\Http\Controllers\Api\ApiController::class, 'markAllNotificationsAsRead']);
 });
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/profile', [App\Http\Controllers\Api\ApiController::class, 'profile']);
+    Route::patch('/profile/preferences', [App\Http\Controllers\Api\ApiController::class, 'updatePreferences']);
+    Route::get('/search', [App\Http\Controllers\Api\ApiController::class, 'search']);
+});
+
+// System status (public)
+Route::get('/system/status', [App\Http\Controllers\Api\ApiController::class, 'systemStatus']);

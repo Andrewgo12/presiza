@@ -120,6 +120,113 @@ class AnalyticsController extends Controller
     }
 
     /**
+     * Get file analytics.
+     */
+    public function files(Request $request): View
+    {
+        try {
+            $period = $request->get('period', 'month');
+            $dateRange = $this->getDateRange($period);
+
+            $fileStats = [
+                'total_files' => \App\Models\File::count(),
+                'files_by_type' => \App\Models\File::select('file_type', DB::raw('count(*) as count'))
+                    ->groupBy('file_type')
+                    ->get(),
+                'files_by_size' => \App\Models\File::select(
+                    DB::raw('CASE
+                        WHEN file_size < 1048576 THEN "< 1MB"
+                        WHEN file_size < 10485760 THEN "1-10MB"
+                        WHEN file_size < 104857600 THEN "10-100MB"
+                        ELSE "> 100MB"
+                    END as size_range'),
+                    DB::raw('count(*) as count')
+                )->groupBy('size_range')->get(),
+                'recent_uploads' => \App\Models\File::with('uploadedBy')
+                    ->whereBetween('created_at', $dateRange)
+                    ->latest()
+                    ->take(10)
+                    ->get(),
+            ];
+
+            return view('analytics.files', compact('fileStats', 'period'));
+        } catch (\Exception $e) {
+            Log::error('Error in files analytics: ' . $e->getMessage());
+            return view('analytics.files', ['fileStats' => [], 'period' => $period]);
+        }
+    }
+
+    /**
+     * Get evidence analytics.
+     */
+    public function evidences(Request $request): View
+    {
+        try {
+            $period = $request->get('period', 'month');
+            $dateRange = $this->getDateRange($period);
+
+            $evidenceStats = [
+                'total_evidences' => \App\Models\Evidence::count(),
+                'evidences_by_status' => \App\Models\Evidence::select('status', DB::raw('count(*) as count'))
+                    ->groupBy('status')
+                    ->get(),
+                'evidences_by_category' => \App\Models\Evidence::select('category', DB::raw('count(*) as count'))
+                    ->groupBy('category')
+                    ->get(),
+                'evidences_by_priority' => \App\Models\Evidence::select('priority', DB::raw('count(*) as count'))
+                    ->groupBy('priority')
+                    ->get(),
+                'recent_evidences' => \App\Models\Evidence::with('submittedBy')
+                    ->whereBetween('created_at', $dateRange)
+                    ->latest()
+                    ->take(10)
+                    ->get(),
+            ];
+
+            return view('analytics.evidences', compact('evidenceStats', 'period'));
+        } catch (\Exception $e) {
+            Log::error('Error in evidences analytics: ' . $e->getMessage());
+            return view('analytics.evidences', ['evidenceStats' => [], 'period' => $period]);
+        }
+    }
+
+    /**
+     * Get user analytics.
+     */
+    public function users(Request $request): View
+    {
+        try {
+            $period = $request->get('period', 'month');
+            $dateRange = $this->getDateRange($period);
+
+            $userStats = [
+                'total_users' => User::count(),
+                'active_users' => User::where('is_active', true)->count(),
+                'users_by_role' => User::select('role', DB::raw('count(*) as count'))
+                    ->groupBy('role')
+                    ->get(),
+                'users_by_department' => User::select('department', DB::raw('count(*) as count'))
+                    ->whereNotNull('department')
+                    ->groupBy('department')
+                    ->get(),
+                'recent_registrations' => User::whereBetween('created_at', $dateRange)
+                    ->latest()
+                    ->take(10)
+                    ->get(),
+                'most_active_users' => User::withCount(['evidences', 'timeLogs'])
+                    ->orderBy('evidences_count', 'desc')
+                    ->take(10)
+                    ->get(),
+            ];
+
+            return view('analytics.users', compact('userStats', 'period'));
+        } catch (\Exception $e) {
+            Log::error('Error in users analytics: ' . $e->getMessage());
+            return view('analytics.users', ['userStats' => [], 'period' => $period]);
+        }
+    }
+
+    /**
      * Export analytics data.
      */
     public function export(Request $request): JsonResponse

@@ -105,7 +105,7 @@ class Project extends Model
      */
     public function milestones(): HasMany
     {
-        return $this->hasMany(Milestone::class)->orderBy('order');
+        return $this->hasMany(ProjectMilestone::class)->orderBy('created_at');
     }
 
     /**

@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\Milestone;
+use App\Models\ProjectMilestone;
 use App\Models\Project;
 use App\Models\User;
 use Illuminate\Database\Seeder;
@@ -25,7 +25,7 @@ class MilestoneSeeder extends Seeder
                 $startDate = now()->addDays(($i - 1) * 30);
                 $endDate = $startDate->copy()->addDays(rand(15, 45));
                 
-                $milestone = Milestone::create([
+                $milestone = ProjectMilestone::create([
                     'project_id' => $project->id,
                     'name' => $this->getMilestoneTitle($i, $project->name),
                     'description' => $this->getMilestoneDescription($i),

@@ -2,7 +2,7 @@
 window.SearchManager = {
     // Configuration
     config: {
-        apiUrl: '/api/v1/search',
+        apiUrl: '/api/search',
         minQueryLength: 2,
         debounceDelay: 300,
         maxResults: 10

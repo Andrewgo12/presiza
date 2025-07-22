@@ -82,7 +82,7 @@ window.NotificationManager = {
     // Mark notification as read
     async markAsRead(notificationId) {
         try {
-            const response = await fetch(`/api/v1/notifications/${notificationId}/read`, {
+            const response = await fetch(`/api/notifications/${notificationId}/read`, {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
@@ -104,7 +104,7 @@ window.NotificationManager = {
     // Mark all notifications as read
     async markAllAsRead() {
         try {
-            const response = await fetch('/api/v1/notifications/read-all', {
+            const response = await fetch('/api/notifications/read-all', {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
