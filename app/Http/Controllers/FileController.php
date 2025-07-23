@@ -288,16 +288,113 @@ class FileController extends Controller
     }
     
     /**
+     * View public file (no authentication required).
+     */
+    public function publicView(File $file)
+    {
+        // Check if file is public
+        if (!$file->is_public) {
+            abort(404);
+        }
+
+        // Check if file is expired
+        if ($file->is_expired) {
+            abort(410, 'File has expired');
+        }
+
+        // Increment view count
+        $file->increment('view_count');
+
+        // Return file response
+        return Storage::disk($file->disk)->response($file->path, $file->original_name);
+    }
+
+    /**
+     * Export files data.
+     */
+    public function export(Request $request)
+    {
+        $this->authorize('viewAny', File::class);
+
+        $query = File::with(['uploader']);
+
+        // Apply filters
+        if ($request->filled('category')) {
+            $query->where('category', $request->category);
+        }
+
+        if ($request->filled('access_level')) {
+            $query->where('access_level', $request->access_level);
+        }
+
+        if ($request->filled('date_from')) {
+            $query->whereDate('created_at', '>=', $request->date_from);
+        }
+
+        if ($request->filled('date_to')) {
+            $query->whereDate('created_at', '<=', $request->date_to);
+        }
+
+        $files = $query->get();
+
+        $csvData = [];
+        $csvData[] = [
+            'ID',
+            'Nombre Original',
+            'Tamaño',
+            'Tipo MIME',
+            'Categoría',
+            'Nivel de Acceso',
+            'Subido por',
+            'Fecha de Subida',
+            'Descargas',
+            'Vistas'
+        ];
+
+        foreach ($files as $file) {
+            $csvData[] = [
+                $file->id,
+                $file->original_name,
+                $file->size_formatted,
+                $file->mime_type,
+                $file->category,
+                $file->access_level,
+                $file->uploader->full_name ?? 'Usuario eliminado',
+                $file->created_at->format('Y-m-d H:i:s'),
+                $file->download_count,
+                $file->view_count
+            ];
+        }
+
+        $filename = 'files_export_' . now()->format('Y-m-d_H-i-s') . '.csv';
+
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => "attachment; filename=\"$filename\"",
+        ];
+
+        $callback = function() use ($csvData) {
+            $file = fopen('php://output', 'w');
+            foreach ($csvData as $row) {
+                fputcsv($file, $row);
+            }
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+    /**
      * Format file size in human readable format.
      */
     private function formatFileSize($bytes)
     {
         if ($bytes == 0) return '0 Bytes';
-        
+
         $k = 1024;
         $sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
         $i = floor(log($bytes) / log($k));
-        
+
         return round($bytes / pow($k, $i), 2) . ' ' . $sizes[$i];
     }
 }

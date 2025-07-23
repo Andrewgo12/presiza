@@ -7,7 +7,7 @@ use App\Models\File;
 use App\Models\Group;
 use App\Models\Message;
 use App\Models\Project;
-use App\Models\Milestone;
+use App\Models\ProjectMilestone;
 use App\Models\TimeLog;
 use App\Models\User;
 use App\Policies\EvidencePolicy;
@@ -35,7 +35,7 @@ class AuthServiceProvider extends ServiceProvider
         Group::class => GroupPolicy::class,
         Message::class => MessagePolicy::class,
         Project::class => ProjectPolicy::class,
-        Milestone::class => MilestonePolicy::class,
+        ProjectMilestone::class => MilestonePolicy::class,
         TimeLog::class => TimeLogPolicy::class,
     ];
 

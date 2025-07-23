@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Project;
 use App\Models\TimeLog;
-use App\Models\Milestone;
+use App\Models\ProjectMilestone;
 use App\Models\User;
 use App\Models\File;
 use Illuminate\Http\Request;
@@ -234,7 +234,7 @@ class SearchController extends Controller
             }
             
             // Milestone suggestions
-            $milestones = Milestone::where('name', 'like', "%{$query}%")
+            $milestones = ProjectMilestone::where('name', 'like', "%{$query}%")
                                  ->whereHas('project.users', function ($q) use ($user) {
                                      $q->where('users.id', $user->id);
                                  })
@@ -362,7 +362,7 @@ class SearchController extends Controller
     {
         $user = Auth::user();
         
-        $milestones = Milestone::where(function ($q) use ($query) {
+        $milestones = ProjectMilestone::where(function ($q) use ($query) {
                           $q->where('name', 'like', "%{$query}%")
                             ->orWhere('description', 'like', "%{$query}%");
                       })

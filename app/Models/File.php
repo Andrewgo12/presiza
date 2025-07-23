@@ -5,7 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Support\Facades\Storage;
+use Carbon\Carbon;
 
 class File extends Model
 {
@@ -47,92 +51,53 @@ class File extends Model
         'metadata' => 'array',
         'is_public' => 'boolean',
         'expires_at' => 'datetime',
-        'size' => 'integer',
         'download_count' => 'integer',
         'view_count' => 'integer',
+        'size' => 'integer',
     ];
 
     /**
      * Get the user who uploaded this file.
      */
-    public function uploader()
+    public function uploader(): BelongsTo
     {
         return $this->belongsTo(User::class, 'uploaded_by');
     }
 
     /**
-     * Get evidences that use this file.
+     * Get the evidences that use this file.
      */
-    public function evidences()
+    public function evidences(): BelongsToMany
     {
-        return $this->belongsToMany(Evidence::class, 'evidence_files')
-            ->withPivot('order')
-            ->withTimestamps();
+        return $this->belongsToMany(Evidence::class, 'evidence_files');
     }
 
     /**
-     * Get the file's formatted size.
+     * Get the messages that have this file attached.
      */
-    public function getSizeFormattedAttribute(): string
+    public function messages(): MorphToMany
     {
-        if ($this->size == 0) return '0 Bytes';
-        
-        $k = 1024;
-        $sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
-        $i = floor(log($this->size) / log($k));
-        
-        return round($this->size / pow($k, $i), 2) . ' ' . $sizes[$i];
+        return $this->morphedByMany(Message::class, 'fileable', 'file_attachments');
     }
 
     /**
-     * Get the file's URL.
+     * Get the projects that have this file attached.
      */
-    public function getUrlAttribute(): string
+    public function projects(): MorphToMany
     {
-        return Storage::disk($this->disk)->url($this->path);
+        return $this->morphedByMany(Project::class, 'fileable', 'file_attachments');
     }
 
     /**
-     * Get the file's thumbnail URL.
+     * Check if the file is expired.
      */
-    public function getThumbnailUrlAttribute(): ?string
+    public function getIsExpiredAttribute(): bool
     {
-        if (!$this->thumbnail_path) {
-            return null;
-        }
-
-        return Storage::disk($this->disk)->url($this->thumbnail_path);
+        return $this->expires_at && $this->expires_at->isPast();
     }
 
     /**
-     * Check if file can be previewed.
-     */
-    public function getCanPreviewAttribute(): bool
-    {
-        $previewableTypes = [
-            'image/jpeg', 'image/png', 'image/gif', 'image/webp',
-            'application/pdf',
-            'text/plain', 'text/html', 'text/css', 'text/javascript',
-            'application/json'
-        ];
-
-        return in_array($this->mime_type, $previewableTypes);
-    }
-
-    /**
-     * Get the file's preview URL.
-     */
-    public function getPreviewUrlAttribute(): ?string
-    {
-        if (!$this->can_preview) {
-            return null;
-        }
-
-        return $this->url;
-    }
-
-    /**
-     * Check if file is an image.
+     * Check if the file is an image.
      */
     public function getIsImageAttribute(): bool
     {
@@ -140,7 +105,7 @@ class File extends Model
     }
 
     /**
-     * Check if file is a document.
+     * Check if the file is a document.
      */
     public function getIsDocumentAttribute(): bool
     {
@@ -152,13 +117,18 @@ class File extends Model
             'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
             'application/vnd.ms-powerpoint',
             'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+            'text/plain',
+            'text/html',
+            'text/css',
+            'text/javascript',
+            'application/json',
         ];
 
         return in_array($this->mime_type, $documentTypes);
     }
 
     /**
-     * Check if file is a video.
+     * Check if the file is a video.
      */
     public function getIsVideoAttribute(): bool
     {
@@ -166,7 +136,7 @@ class File extends Model
     }
 
     /**
-     * Check if file is audio.
+     * Check if the file is an audio file.
      */
     public function getIsAudioAttribute(): bool
     {
@@ -174,23 +144,107 @@ class File extends Model
     }
 
     /**
-     * Check if file is an archive.
+     * Check if the file is an archive.
      */
     public function getIsArchiveAttribute(): bool
     {
         $archiveTypes = [
             'application/zip',
             'application/x-rar-compressed',
+            'application/x-7z-compressed',
             'application/x-tar',
             'application/gzip',
-            'application/x-7z-compressed',
         ];
 
         return in_array($this->mime_type, $archiveTypes);
     }
 
     /**
-     * Get file's category badge color.
+     * Get the file size in human readable format.
+     */
+    public function getSizeFormattedAttribute(): string
+    {
+        $bytes = $this->size;
+        $units = ['B', 'KB', 'MB', 'GB', 'TB'];
+        
+        for ($i = 0; $bytes > 1024 && $i < count($units) - 1; $i++) {
+            $bytes /= 1024;
+        }
+        
+        return round($bytes, 2) . ' ' . $units[$i];
+    }
+
+    /**
+     * Get the file URL.
+     */
+    public function getUrlAttribute(): string
+    {
+        return Storage::disk($this->disk)->url($this->path);
+    }
+
+    /**
+     * Get the download URL.
+     */
+    public function getDownloadUrlAttribute(): string
+    {
+        return route('files.download', $this);
+    }
+
+    /**
+     * Get the preview URL if available.
+     */
+    public function getPreviewUrlAttribute(): ?string
+    {
+        if ($this->canPreview()) {
+            return route('files.preview', $this);
+        }
+        
+        return null;
+    }
+
+    /**
+     * Check if the file can be previewed.
+     */
+    public function canPreview(): bool
+    {
+        $previewableTypes = [
+            'image/jpeg', 'image/png', 'image/gif', 'image/webp',
+            'application/pdf',
+            'text/plain', 'text/html', 'text/css', 'text/javascript',
+            'application/json'
+        ];
+        
+        return in_array($this->mime_type, $previewableTypes);
+    }
+
+    /**
+     * Get the file icon based on type.
+     */
+    public function getIconAttribute(): string
+    {
+        if ($this->is_image) {
+            return 'fas fa-image';
+        } elseif ($this->is_video) {
+            return 'fas fa-video';
+        } elseif ($this->is_audio) {
+            return 'fas fa-music';
+        } elseif ($this->is_archive) {
+            return 'fas fa-file-archive';
+        } elseif ($this->mime_type === 'application/pdf') {
+            return 'fas fa-file-pdf';
+        } elseif (str_contains($this->mime_type, 'word')) {
+            return 'fas fa-file-word';
+        } elseif (str_contains($this->mime_type, 'excel') || str_contains($this->mime_type, 'spreadsheet')) {
+            return 'fas fa-file-excel';
+        } elseif (str_contains($this->mime_type, 'powerpoint') || str_contains($this->mime_type, 'presentation')) {
+            return 'fas fa-file-powerpoint';
+        } else {
+            return 'fas fa-file';
+        }
+    }
+
+    /**
+     * Get the category badge color.
      */
     public function getCategoryBadgeColorAttribute(): string
     {
@@ -198,14 +252,14 @@ class File extends Model
             'document' => 'bg-blue-100 text-blue-800',
             'image' => 'bg-green-100 text-green-800',
             'video' => 'bg-purple-100 text-purple-800',
-            'audio' => 'bg-pink-100 text-pink-800',
-            'archive' => 'bg-yellow-100 text-yellow-800',
+            'audio' => 'bg-yellow-100 text-yellow-800',
+            'archive' => 'bg-gray-100 text-gray-800',
             default => 'bg-gray-100 text-gray-800',
         };
     }
 
     /**
-     * Get access level badge color.
+     * Get the access level badge color.
      */
     public function getAccessLevelBadgeColorAttribute(): string
     {
@@ -219,23 +273,23 @@ class File extends Model
     }
 
     /**
-     * Check if file is expired.
+     * Scope to filter by category.
      */
-    public function getIsExpiredAttribute(): bool
-    {
-        return $this->expires_at && $this->expires_at->isPast();
-    }
-
-    /**
-     * Scope to get files by category.
-     */
-    public function scopeByCategory($query, $category)
+    public function scopeCategory($query, $category)
     {
         return $query->where('category', $category);
     }
 
     /**
-     * Scope to get public files.
+     * Scope to filter by access level.
+     */
+    public function scopeAccessLevel($query, $level)
+    {
+        return $query->where('access_level', $level);
+    }
+
+    /**
+     * Scope to filter public files.
      */
     public function scopePublic($query)
     {
@@ -243,42 +297,15 @@ class File extends Model
     }
 
     /**
-     * Scope to get files by access level.
+     * Scope to filter private files.
      */
-    public function scopeByAccessLevel($query, $level)
+    public function scopePrivate($query)
     {
-        return $query->where('access_level', $level);
+        return $query->where('is_public', false);
     }
 
     /**
-     * Scope to search files.
-     */
-    public function scopeSearch($query, $search)
-    {
-        return $query->where(function ($q) use ($search) {
-            $q->where('original_name', 'like', "%{$search}%")
-              ->orWhere('description', 'like', "%{$search}%");
-        });
-    }
-
-    /**
-     * Scope to get files uploaded in date range.
-     */
-    public function scopeUploadedBetween($query, $start, $end)
-    {
-        return $query->whereBetween('created_at', [$start, $end]);
-    }
-
-    /**
-     * Scope to get files by uploader.
-     */
-    public function scopeByUploader($query, $userId)
-    {
-        return $query->where('uploaded_by', $userId);
-    }
-
-    /**
-     * Scope to get non-expired files.
+     * Scope to filter non-expired files.
      */
     public function scopeNotExpired($query)
     {
@@ -289,9 +316,38 @@ class File extends Model
     }
 
     /**
+     * Scope to filter expired files.
+     */
+    public function scopeExpired($query)
+    {
+        return $query->whereNotNull('expires_at')
+                    ->where('expires_at', '<=', now());
+    }
+
+    /**
+     * Scope to search files.
+     */
+    public function scopeSearch($query, $search)
+    {
+        return $query->where(function ($q) use ($search) {
+            $q->where('original_name', 'like', "%{$search}%")
+              ->orWhere('description', 'like', "%{$search}%")
+              ->orWhere('filename', 'like', "%{$search}%");
+        });
+    }
+
+    /**
+     * Scope to filter by uploader.
+     */
+    public function scopeUploadedBy($query, $userId)
+    {
+        return $query->where('uploaded_by', $userId);
+    }
+
+    /**
      * Increment download count.
      */
-    public function incrementDownloadCount()
+    public function incrementDownloadCount(): void
     {
         $this->increment('download_count');
     }
@@ -299,42 +355,21 @@ class File extends Model
     /**
      * Increment view count.
      */
-    public function incrementViewCount()
+    public function incrementViewCount(): void
     {
         $this->increment('view_count');
     }
 
     /**
-     * Delete file from storage.
+     * Delete the physical file from storage.
      */
     public function deleteFromStorage(): bool
     {
-        $deleted = true;
-
-        // Delete main file
         if (Storage::disk($this->disk)->exists($this->path)) {
-            $deleted = Storage::disk($this->disk)->delete($this->path);
+            return Storage::disk($this->disk)->delete($this->path);
         }
 
-        // Delete thumbnail if exists
-        if ($this->thumbnail_path && Storage::disk($this->disk)->exists($this->thumbnail_path)) {
-            Storage::disk($this->disk)->delete($this->thumbnail_path);
-        }
-
-        return $deleted;
-    }
-
-    /**
-     * Get file statistics.
-     */
-    public function getStatsAttribute(): array
-    {
-        return [
-            'evidences_count' => $this->evidences()->count(),
-            'total_downloads' => $this->download_count,
-            'total_views' => $this->view_count,
-            'is_popular' => $this->download_count > 10 || $this->view_count > 50,
-        ];
+        return true;
     }
 
     /**
@@ -344,7 +379,7 @@ class File extends Model
     {
         parent::boot();
 
-        // Auto-delete file from storage when model is deleted
+        // Delete physical file when model is deleted
         static::deleting(function ($file) {
             $file->deleteFromStorage();
         });

@@ -1,6 +1,6 @@
 @php
-    $iconClass = $size ?? 'h-6 w-6';
-    $mimeType = $mimeType ?? 'application/octet-stream';
+    $iconClass = $attributes->get('class', 'h-6 w-6');
+    $mimeType = $type ?? $mimeType ?? 'application/octet-stream';
     
     // Determinar el icono basado en el tipo MIME
     $iconSvg = '';

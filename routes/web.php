@@ -57,6 +57,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('evidences', EvidenceController::class);
     Route::post('evidences/{evidence}/evaluate', [EvidenceController::class, 'evaluate'])->name('evidences.evaluate');
     Route::patch('evidences/{evidence}/status', [EvidenceController::class, 'updateStatus'])->name('evidences.status');
+    Route::patch('evidences/{evidence}/approve', [EvidenceController::class, 'approve'])->name('evidences.approve');
+    Route::patch('evidences/{evidence}/reject', [EvidenceController::class, 'reject'])->name('evidences.reject');
     Route::get('evidences/{evidence}/history', [EvidenceController::class, 'history'])->name('evidences.history');
     Route::post('evidences/{evidence}/assign', [EvidenceController::class, 'assign'])->name('evidences.assign');
     

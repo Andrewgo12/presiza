@@ -372,12 +372,62 @@ class EvidenceController extends Controller
     }
     
     /**
+     * Approve evidence.
+     */
+    public function approve(Evidence $evidence)
+    {
+        $this->authorize('updateStatus', $evidence);
+
+        $oldStatus = $evidence->status;
+
+        $evidence->update([
+            'status' => 'approved'
+        ]);
+
+        // Registrar cambio en historial
+        $evidence->history()->create([
+            'user_id' => Auth::id(),
+            'action' => 'approved',
+            'old_values' => ['status' => $oldStatus],
+            'new_values' => ['status' => 'approved'],
+            'notes' => 'Evidencia aprobada por administrador'
+        ]);
+
+        return back()->with('success', 'Evidencia aprobada exitosamente.');
+    }
+
+    /**
+     * Reject evidence.
+     */
+    public function reject(Evidence $evidence)
+    {
+        $this->authorize('updateStatus', $evidence);
+
+        $oldStatus = $evidence->status;
+
+        $evidence->update([
+            'status' => 'rejected'
+        ]);
+
+        // Registrar cambio en historial
+        $evidence->history()->create([
+            'user_id' => Auth::id(),
+            'action' => 'rejected',
+            'old_values' => ['status' => $oldStatus],
+            'new_values' => ['status' => 'rejected'],
+            'notes' => 'Evidencia rechazada por administrador'
+        ]);
+
+        return back()->with('success', 'Evidencia rechazada.');
+    }
+
+    /**
      * Get evidence statistics.
      */
     private function getStats()
     {
         $baseQuery = Evidence::query();
-        
+
         // Filtrar por rol del usuario
         if (Auth::user()->role !== 'admin') {
             $baseQuery->where(function($q) {
@@ -385,7 +435,7 @@ class EvidenceController extends Controller
                   ->orWhere('assigned_to', Auth::id());
             });
         }
-        
+
         return [
             'pending' => (clone $baseQuery)->where('status', 'pending')->count(),
             'under_review' => (clone $baseQuery)->where('status', 'under_review')->count(),
