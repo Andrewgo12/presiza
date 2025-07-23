@@ -47,8 +47,8 @@ class LogSecurityEvents
                 '/<iframe/i',
             ],
             'path_traversal' => [
-                '/\.\.\//i',
-                '/\.\.\\/i',
+                '/\.\.\//',
+                '/\.\.\\\\/',
                 '/etc\/passwd/i',
                 '/windows\/system32/i',
             ],
