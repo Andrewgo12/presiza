@@ -48,7 +48,7 @@ class LogSecurityEvents
             ],
             'path_traversal' => [
                 '/\.\.\//',
-                '/\.\.\\\\/',
+                '/\.\.\\\/',
                 '/etc\/passwd/i',
                 '/windows\/system32/i',
             ],

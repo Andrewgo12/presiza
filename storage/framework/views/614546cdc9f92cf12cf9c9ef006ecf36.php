@@ -12,7 +12,8 @@
     <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700&display=swap" rel="stylesheet" />
     
     <!-- Styles -->
-    <?php echo app('Illuminate\Foundation\Vite')(['resources/css/app.css', 'resources/js/app.js']); ?>
+    <link href="<?php echo e(asset('css/app.css')); ?>" rel="stylesheet">
+    <script src="<?php echo e(asset('js/app.js')); ?>" defer></script>
     
     <!-- Alpine.js -->
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
