@@ -322,4 +322,4 @@ Para soporte técnico o consultas:
 
 ---
 
-**Desarrollado con ❤️ usando Laravel 11**
+**Desarrollado con ❤️ usando Laravel 10**
