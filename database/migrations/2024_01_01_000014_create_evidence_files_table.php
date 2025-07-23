@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('evidence_files', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('evidence_id')->constrained()->onDelete('cascade');
-            $table->foreignId('file_id')->constrained()->onDelete('cascade');
+            $table->foreignId('evidence_id')->constrained('evidences')->onDelete('cascade');
+            $table->foreignId('file_id')->constrained('files')->onDelete('cascade');
             $table->integer('order')->default(0);
             $table->timestamps();
             

@@ -34,20 +34,9 @@ return new class extends Migration
             $table->fullText(['title', 'description']);
         });
 
-        Schema::create('evidence_files', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('evidence_id')->constrained()->onDelete('cascade');
-            $table->foreignId('file_id')->constrained()->onDelete('cascade');
-            $table->integer('order')->default(0);
-            $table->timestamps();
-            
-            $table->unique(['evidence_id', 'file_id']);
-            $table->index(['evidence_id', 'order']);
-        });
-
         Schema::create('evidence_evaluations', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('evidence_id')->constrained()->onDelete('cascade');
+            $table->foreignId('evidence_id')->constrained('evidences')->onDelete('cascade');
             $table->foreignId('evaluator_id')->constrained('users')->onDelete('cascade');
             $table->integer('rating')->nullable();
             $table->text('comment')->nullable();
@@ -60,8 +49,8 @@ return new class extends Migration
 
         Schema::create('evidence_history', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('evidence_id')->constrained()->onDelete('cascade');
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('evidence_id')->constrained('evidences')->onDelete('cascade');
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->string('action');
             $table->json('old_values')->nullable();
             $table->json('new_values')->nullable();
@@ -80,7 +69,6 @@ return new class extends Migration
     {
         Schema::dropIfExists('evidence_history');
         Schema::dropIfExists('evidence_evaluations');
-        Schema::dropIfExists('evidence_files');
         Schema::dropIfExists('evidences');
     }
 };

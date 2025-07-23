@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('project_id')->constrained('projects')->onDelete('cascade');
-            $table->foreignId('milestone_id')->nullable()->constrained('milestones')->onDelete('set null');
+            $table->foreignId('milestone_id')->nullable()->constrained('project_milestones')->onDelete('set null');
             $table->string('task_description');
             $table->decimal('hours', 8, 2);
             $table->date('date');
