@@ -1,0 +1,772 @@
+/* PROJECTS EDIT - PROJECT EDITING FORM */
+
+/* ===== PROJECTS EDIT CONTAINER ===== */
+.projects-edit-container {
+    padding: var(--space-6);
+    max-width: 1000px;
+    margin: 0 auto;
+    background: var(--gray-50);
+    min-height: 100vh;
+}
+
+.projects-edit-header {
+    margin-bottom: var(--space-8);
+    background: white;
+    border-radius: var(--radius-2xl);
+    padding: var(--space-8);
+    box-shadow: var(--shadow-xl);
+    border: 2px solid var(--gray-200);
+    position: relative;
+    overflow: hidden;
+}
+
+.projects-edit-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 6px;
+    background: linear-gradient(90deg, var(--success-500) 0%, var(--success-600) 100%);
+}
+
+.projects-edit-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin-bottom: var(--space-4);
+    font-size: var(--text-sm);
+}
+
+.projects-edit-breadcrumb-link {
+    color: var(--gray-500);
+    text-decoration: none;
+    transition: color var(--transition-fast);
+}
+
+.projects-edit-breadcrumb-link:hover {
+    color: var(--success-600);
+}
+
+.projects-edit-breadcrumb-separator {
+    color: var(--gray-400);
+}
+
+.projects-edit-breadcrumb-current {
+    color: var(--gray-900);
+    font-weight: 600;
+}
+
+.projects-edit-title-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: var(--space-6);
+    flex-wrap: wrap;
+    gap: var(--space-4);
+}
+
+.projects-edit-title-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.projects-edit-title {
+    font-size: var(--text-4xl);
+    font-weight: 700;
+    color: var(--gray-900);
+    margin-bottom: var(--space-2);
+}
+
+.projects-edit-subtitle {
+    color: var(--gray-600);
+    font-size: var(--text-lg);
+    line-height: 1.6;
+}
+
+.projects-edit-actions {
+    display: flex;
+    gap: var(--space-3);
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.projects-edit-save-btn {
+    background: linear-gradient(135deg, var(--success-600) 0%, var(--success-700) 100%);
+    color: white;
+    padding: var(--space-3) var(--space-6);
+    border-radius: var(--radius-xl);
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    box-shadow: var(--shadow-md);
+    transition: all var(--transition-normal);
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.projects-edit-save-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.projects-edit-preview-btn {
+    background: white;
+    color: var(--success-600);
+    padding: var(--space-3) var(--space-6);
+    border: 2px solid var(--success-600);
+    border-radius: var(--radius-xl);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition-normal);
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.projects-edit-preview-btn:hover {
+    background: var(--success-50);
+}
+
+/* ===== PROJECT STATUS INDICATOR ===== */
+.projects-edit-status {
+    position: absolute;
+    top: var(--space-6);
+    right: var(--space-6);
+    padding: var(--space-3) var(--space-6);
+    border-radius: var(--radius-full);
+    font-size: var(--text-sm);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    box-shadow: var(--shadow-md);
+}
+
+.projects-edit-status.active {
+    background-color: var(--success-100);
+    color: var(--success-700);
+    border: 2px solid var(--success-300);
+}
+
+.projects-edit-status.planning {
+    background-color: var(--info-100);
+    color: var(--info-700);
+    border: 2px solid var(--info-300);
+}
+
+.projects-edit-status.on-hold {
+    background-color: var(--warning-100);
+    color: var(--warning-700);
+    border: 2px solid var(--warning-300);
+}
+
+.projects-edit-status.completed {
+    background-color: var(--primary-100);
+    color: var(--primary-700);
+    border: 2px solid var(--primary-300);
+}
+
+.projects-edit-status.cancelled {
+    background-color: var(--error-100);
+    color: var(--error-700);
+    border: 2px solid var(--error-300);
+}
+
+/* ===== FORM CONTAINER ===== */
+.projects-edit-form-container {
+    background: white;
+    border-radius: var(--radius-2xl);
+    box-shadow: var(--shadow-xl);
+    border: 2px solid var(--gray-200);
+    overflow: hidden;
+}
+
+.projects-edit-form-header {
+    padding: var(--space-8);
+    border-bottom: 2px solid var(--gray-200);
+    background: linear-gradient(135deg, var(--success-50) 0%, white 100%);
+    text-align: center;
+    position: relative;
+}
+
+.projects-edit-form-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 6px;
+    background: linear-gradient(90deg, var(--success-500) 0%, var(--success-600) 100%);
+}
+
+.projects-edit-form-icon {
+    width: 4rem;
+    height: 4rem;
+    background: linear-gradient(135deg, var(--success-500) 0%, var(--success-600) 100%);
+    border-radius: var(--radius-xl);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: var(--text-2xl);
+    margin: 0 auto var(--space-4);
+    box-shadow: var(--shadow-lg);
+}
+
+.projects-edit-form-title {
+    font-size: var(--text-2xl);
+    font-weight: 700;
+    color: var(--gray-900);
+    margin-bottom: var(--space-2);
+}
+
+.projects-edit-form-description {
+    color: var(--gray-600);
+    font-size: var(--text-base);
+}
+
+/* ===== FORM BODY ===== */
+.projects-edit-form-body {
+    padding: var(--space-8);
+}
+
+.projects-edit-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-8);
+}
+
+/* ===== FORM SECTIONS ===== */
+.projects-edit-section {
+    border-bottom: 1px solid var(--gray-200);
+    padding-bottom: var(--space-8);
+}
+
+.projects-edit-section:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.projects-edit-section-title {
+    font-size: var(--text-xl);
+    font-weight: 700;
+    color: var(--gray-900);
+    margin-bottom: var(--space-6);
+    padding-bottom: var(--space-3);
+    border-bottom: 3px solid var(--success-100);
+    position: relative;
+}
+
+.projects-edit-section-title::after {
+    content: '';
+    position: absolute;
+    bottom: -3px;
+    left: 0;
+    width: 60px;
+    height: 3px;
+    background: var(--success-600);
+}
+
+.projects-edit-section-description {
+    color: var(--gray-600);
+    margin-bottom: var(--space-6);
+    line-height: 1.6;
+}
+
+/* ===== FORM FIELDS ===== */
+.projects-edit-field-group {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: var(--space-6);
+    margin-bottom: var(--space-6);
+}
+
+.projects-edit-field {
+    display: flex;
+    flex-direction: column;
+}
+
+.projects-edit-field.full-width {
+    grid-column: 1 / -1;
+}
+
+.projects-edit-label {
+    font-weight: 600;
+    color: var(--gray-700);
+    margin-bottom: var(--space-2);
+    font-size: var(--text-sm);
+}
+
+.projects-edit-label.required::after {
+    content: ' *';
+    color: var(--error-500);
+}
+
+.projects-edit-input,
+.projects-edit-select,
+.projects-edit-textarea {
+    padding: var(--space-3);
+    border: 2px solid var(--gray-300);
+    border-radius: var(--radius-lg);
+    font-size: var(--text-base);
+    transition: all var(--transition-normal);
+    background: white;
+}
+
+.projects-edit-input:focus,
+.projects-edit-select:focus,
+.projects-edit-textarea:focus {
+    outline: none;
+    border-color: var(--success-500);
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+.projects-edit-textarea {
+    min-height: 120px;
+    resize: vertical;
+    font-family: inherit;
+}
+
+.projects-edit-field-help {
+    color: var(--gray-500);
+    font-size: var(--text-sm);
+    margin-top: var(--space-2);
+    line-height: 1.4;
+}
+
+.projects-edit-field-error {
+    color: var(--error-600);
+    font-size: var(--text-sm);
+    margin-top: var(--space-2);
+    font-weight: 500;
+}
+
+/* ===== PROGRESS TRACKING ===== */
+.projects-edit-progress-section {
+    background: var(--gray-50);
+    border-radius: var(--radius-xl);
+    padding: var(--space-6);
+    border: 1px solid var(--gray-200);
+}
+
+.projects-edit-progress-current {
+    margin-bottom: var(--space-6);
+}
+
+.projects-edit-progress-label {
+    font-weight: 600;
+    color: var(--gray-700);
+    margin-bottom: var(--space-3);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.projects-edit-progress-percentage {
+    font-weight: 700;
+    color: var(--success-600);
+    font-size: var(--text-lg);
+}
+
+.projects-edit-progress-bar {
+    width: 100%;
+    height: 12px;
+    background: var(--gray-200);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+    margin-bottom: var(--space-4);
+}
+
+.projects-edit-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--success-500) 0%, var(--success-600) 100%);
+    border-radius: var(--radius-full);
+    transition: width var(--transition-slow);
+}
+
+.projects-edit-progress-input {
+    width: 100%;
+    padding: var(--space-3);
+    border: 2px solid var(--gray-300);
+    border-radius: var(--radius-lg);
+    font-size: var(--text-base);
+    transition: all var(--transition-normal);
+}
+
+.projects-edit-progress-input:focus {
+    outline: none;
+    border-color: var(--success-500);
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+/* ===== TEAM MANAGEMENT ===== */
+.projects-edit-team-section {
+    background: var(--gray-50);
+    border-radius: var(--radius-xl);
+    padding: var(--space-6);
+    border: 1px solid var(--gray-200);
+}
+
+.projects-edit-team-title {
+    font-weight: 700;
+    color: var(--gray-900);
+    margin-bottom: var(--space-4);
+}
+
+.projects-edit-team-search {
+    position: relative;
+    margin-bottom: var(--space-6);
+}
+
+.projects-edit-team-search-input {
+    width: 100%;
+    padding: var(--space-3) var(--space-3) var(--space-3) var(--space-10);
+    border: 2px solid var(--gray-300);
+    border-radius: var(--radius-lg);
+    font-size: var(--text-base);
+    transition: all var(--transition-normal);
+}
+
+.projects-edit-team-search-input:focus {
+    outline: none;
+    border-color: var(--success-500);
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+.projects-edit-team-search-icon {
+    position: absolute;
+    left: var(--space-3);
+    top: 50%;
+    transform: translateY(-50%);
+    width: 1.25rem;
+    height: 1.25rem;
+    color: var(--gray-400);
+}
+
+.projects-edit-team-current {
+    margin-bottom: var(--space-6);
+}
+
+.projects-edit-team-current-title {
+    font-weight: 600;
+    color: var(--gray-700);
+    margin-bottom: var(--space-3);
+    font-size: var(--text-sm);
+}
+
+.projects-edit-team-current-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+}
+
+.projects-edit-team-member {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-3);
+    background: white;
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-lg);
+    transition: all var(--transition-fast);
+}
+
+.projects-edit-team-member:hover {
+    box-shadow: var(--shadow-sm);
+}
+
+.projects-edit-team-avatar {
+    width: 2rem;
+    height: 2rem;
+    border-radius: var(--radius-lg);
+    background: linear-gradient(135deg, var(--success-500) 0%, var(--success-600) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+    font-size: var(--text-sm);
+    flex-shrink: 0;
+}
+
+.projects-edit-team-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.projects-edit-team-name {
+    font-weight: 600;
+    color: var(--gray-900);
+    font-size: var(--text-sm);
+}
+
+.projects-edit-team-role {
+    color: var(--gray-500);
+    font-size: var(--text-xs);
+}
+
+.projects-edit-team-remove {
+    background: var(--error-50);
+    color: var(--error-600);
+    border: 1px solid var(--error-200);
+    padding: var(--space-1);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.projects-edit-team-remove:hover {
+    background: var(--error-100);
+    border-color: var(--error-300);
+}
+
+/* ===== MILESTONES SECTION ===== */
+.projects-edit-milestones-section {
+    background: var(--gray-50);
+    border-radius: var(--radius-xl);
+    padding: var(--space-6);
+    border: 1px solid var(--gray-200);
+}
+
+.projects-edit-milestones-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-6);
+}
+
+.projects-edit-milestones-title {
+    font-weight: 700;
+    color: var(--gray-900);
+}
+
+.projects-edit-milestones-add-btn {
+    background: var(--success-600);
+    color: white;
+    padding: var(--space-2) var(--space-4);
+    border-radius: var(--radius-lg);
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: all var(--transition-normal);
+    font-size: var(--text-sm);
+}
+
+.projects-edit-milestones-add-btn:hover {
+    background: var(--success-700);
+}
+
+.projects-edit-milestones-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+.projects-edit-milestone-item {
+    background: white;
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-lg);
+    padding: var(--space-4);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.projects-edit-milestone-info {
+    flex: 1;
+}
+
+.projects-edit-milestone-name {
+    font-weight: 600;
+    color: var(--gray-900);
+    margin-bottom: var(--space-1);
+}
+
+.projects-edit-milestone-date {
+    color: var(--gray-600);
+    font-size: var(--text-sm);
+}
+
+.projects-edit-milestone-actions {
+    display: flex;
+    gap: var(--space-2);
+}
+
+.projects-edit-milestone-action {
+    padding: var(--space-1) var(--space-2);
+    border: 1px solid var(--gray-300);
+    border-radius: var(--radius-md);
+    background: white;
+    color: var(--gray-600);
+    font-size: var(--text-xs);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.projects-edit-milestone-action:hover {
+    background: var(--success-50);
+    border-color: var(--success-300);
+    color: var(--success-700);
+}
+
+/* ===== FORM FOOTER ===== */
+.projects-edit-form-footer {
+    padding: var(--space-8);
+    border-top: 2px solid var(--gray-200);
+    background: linear-gradient(135deg, var(--gray-50) 0%, white 100%);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--space-4);
+}
+
+.projects-edit-form-info {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    color: var(--gray-600);
+    font-size: var(--text-sm);
+}
+
+.projects-edit-form-actions {
+    display: flex;
+    gap: var(--space-4);
+}
+
+.projects-edit-btn {
+    padding: var(--space-3) var(--space-6);
+    border-radius: var(--radius-xl);
+    font-weight: 600;
+    font-size: var(--text-base);
+    cursor: pointer;
+    transition: all var(--transition-normal);
+    border: 2px solid transparent;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.projects-edit-btn-primary {
+    background: linear-gradient(135deg, var(--success-600) 0%, var(--success-700) 100%);
+    color: white;
+    box-shadow: var(--shadow-md);
+}
+
+.projects-edit-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.projects-edit-btn-secondary {
+    background: white;
+    color: var(--gray-600);
+    border-color: var(--gray-300);
+}
+
+.projects-edit-btn-secondary:hover {
+    background: var(--gray-50);
+    border-color: var(--gray-400);
+}
+
+.projects-edit-btn-danger {
+    background: white;
+    color: var(--error-600);
+    border-color: var(--error-600);
+}
+
+.projects-edit-btn-danger:hover {
+    background: var(--error-50);
+}
+
+/* ===== SAVE INDICATOR ===== */
+.projects-edit-save-indicator {
+    position: fixed;
+    bottom: var(--space-6);
+    right: var(--space-6);
+    background: var(--success-600);
+    color: white;
+    padding: var(--space-3) var(--space-6);
+    border-radius: var(--radius-xl);
+    font-weight: 600;
+    box-shadow: var(--shadow-lg);
+    transform: translateY(100px);
+    opacity: 0;
+    transition: all var(--transition-normal);
+    z-index: 1000;
+}
+
+.projects-edit-save-indicator.show {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.projects-edit-save-indicator.error {
+    background: var(--error-600);
+}
+
+/* ===== RESPONSIVE PROJECTS EDIT ===== */
+@media (max-width: 768px) {
+    .projects-edit-container {
+        padding: var(--space-4);
+    }
+    
+    .projects-edit-header {
+        padding: var(--space-6);
+    }
+    
+    .projects-edit-title-section {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .projects-edit-title {
+        font-size: var(--text-3xl);
+    }
+    
+    .projects-edit-form-body {
+        padding: var(--space-6);
+    }
+    
+    .projects-edit-field-group {
+        grid-template-columns: 1fr;
+    }
+    
+    .projects-edit-team-current-list {
+        flex-direction: column;
+    }
+    
+    .projects-edit-milestones-header {
+        flex-direction: column;
+        gap: var(--space-3);
+        align-items: stretch;
+    }
+    
+    .projects-edit-milestone-item {
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--space-3);
+    }
+    
+    .projects-edit-milestone-actions {
+        justify-content: center;
+    }
+    
+    .projects-edit-form-footer {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .projects-edit-form-actions {
+        flex-direction: column;
+    }
+    
+    .projects-edit-save-indicator {
+        bottom: var(--space-4);
+        right: var(--space-4);
+        left: var(--space-4);
+        text-align: center;
+    }
+}

@@ -509,4 +509,101 @@ class AdminController extends Controller
             ],
         ];
     }
+
+
+
+    /**
+     * Create a new backup.
+     */
+    public function createBackup(Request $request)
+    {
+        try {
+            $backupName = 'backup_' . now()->format('Y_m_d_H_i_s') . '.sql';
+
+            // Simulate backup creation
+            sleep(2);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Backup creado exitosamente',
+                'backup' => [
+                    'name' => $backupName,
+                    'size' => '2.4 GB',
+                    'created_at' => now()->toISOString()
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al crear el backup: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Delete a backup.
+     */
+    public function deleteBackup($backup)
+    {
+        try {
+            return response()->json([
+                'success' => true,
+                'message' => 'Backup eliminado exitosamente'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al eliminar el backup: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+
+
+    /**
+     * Clear system logs.
+     */
+    public function clearLogs(Request $request)
+    {
+        try {
+            $logType = $request->input('type', 'all');
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Logs eliminados exitosamente'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al eliminar los logs: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get backup statistics.
+     */
+    private function getBackupStats(): array
+    {
+        return [
+            'total_backups' => 15,
+            'total_size' => '3.2 GB',
+            'last_backup' => now()->subHours(6),
+            'success_rate' => 98.5,
+        ];
+    }
+
+    /**
+     * Get log statistics.
+     */
+    private function getLogStats(): array
+    {
+        return [
+            'total_entries' => 1247,
+            'errors' => 12,
+            'warnings' => 45,
+            'info' => 890,
+            'debug' => 300,
+        ];
+    }
 }

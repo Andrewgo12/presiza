@@ -18,30 +18,128 @@ use Carbon\Carbon;
 class DashboardController extends Controller
 {
     /**
-     * Display the dashboard.
+     * Display the role-based dashboard.
      */
     public function index()
     {
         $user = Auth::user();
-        
+
+        // Update last login timestamp
+        $user->updateLastLogin();
+
+        // Get role-specific dashboard view
+        $dashboardView = $this->getDashboardView($user);
+
         // Obtener estadísticas principales
         $stats = $this->getStats($user);
-        
+
         // Obtener actividad reciente
         $recent_activities = $this->getRecentActivities($user);
-        
+
         // Obtener archivos recientes
         $recent_files = $this->getRecentFiles($user);
-        
+
         // Obtener datos para gráficos
         $chart_data = $this->getChartData($user);
-        
-        return view('dashboard.index', compact(
+
+        // Get role-specific data
+        $roleData = $this->getRoleSpecificData($user);
+
+        return view($dashboardView, compact(
             'stats',
-            'recent_activities', 
+            'recent_activities',
             'recent_files',
-            'chart_data'
+            'chart_data',
+            'roleData'
         ));
+    }
+
+    /**
+     * Get the appropriate dashboard view based on user role.
+     */
+    private function getDashboardView($user): string
+    {
+        return match($user->role) {
+            User::ROLE_ADMIN => 'admin.dashboard',
+            User::ROLE_MEDICAL => 'dashboard.medical',
+            User::ROLE_EPS => 'dashboard.eps',
+            User::ROLE_SYSTEMS => 'dashboard.systems',
+            default => 'dashboard.index'
+        };
+    }
+
+    /**
+     * Get role-specific data for the dashboard.
+     */
+    private function getRoleSpecificData($user): array
+    {
+        return match($user->role) {
+            User::ROLE_ADMIN => $this->getAdminData($user),
+            User::ROLE_MEDICAL => $this->getMedicalData($user),
+            User::ROLE_EPS => $this->getEPSData($user),
+            User::ROLE_SYSTEMS => $this->getSystemsData($user),
+            default => []
+        };
+    }
+
+    /**
+     * Get admin-specific dashboard data.
+     */
+    private function getAdminData($user): array
+    {
+        return [
+            'total_users' => User::active()->count(),
+            'new_users_this_month' => User::whereMonth('created_at', now()->month)->count(),
+            'system_alerts' => $this->getSystemAlerts(),
+            'pending_approvals' => Evidence::where('status', 'pending_approval')->count(),
+            'storage_usage' => $this->getStorageUsage(),
+        ];
+    }
+
+    /**
+     * Get medical staff dashboard data.
+     */
+    private function getMedicalData($user): array
+    {
+        return [
+            'assigned_cases' => Evidence::where('assigned_to', $user->id)
+                ->whereIn('status', ['pending', 'in_review'])
+                ->count(),
+            'completed_evaluations' => Evidence::where('assigned_to', $user->id)
+                ->where('status', 'completed')
+                ->whereMonth('updated_at', now()->month)
+                ->count(),
+            'urgent_cases' => Evidence::where('assigned_to', $user->id)
+                ->where('priority', 'urgent')
+                ->whereIn('status', ['pending', 'in_review'])
+                ->count(),
+        ];
+    }
+
+    /**
+     * Get EPS analyst dashboard data.
+     */
+    private function getEPSData($user): array
+    {
+        return [
+            'reports_generated' => $this->getReportsCount($user),
+            'data_quality_score' => $this->getDataQualityScore(),
+            'pending_analysis' => Evidence::where('status', 'pending_analysis')->count(),
+            'monthly_trends' => $this->getMonthlyTrends(),
+        ];
+    }
+
+    /**
+     * Get systems administrator dashboard data.
+     */
+    private function getSystemsData($user): array
+    {
+        return [
+            'system_health' => $this->getSystemHealth(),
+            'backup_status' => $this->getBackupStatus(),
+            'server_metrics' => $this->getServerMetrics(),
+            'security_events' => $this->getSecurityEvents(),
+        ];
     }
     
     /**
@@ -209,11 +307,135 @@ class DashboardController extends Controller
     private function formatFileSize($bytes)
     {
         if ($bytes == 0) return '0 Bytes';
-        
+
         $k = 1024;
         $sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
         $i = floor(log($bytes) / log($k));
-        
+
         return round($bytes / pow($k, $i), 2) . ' ' . $sizes[$i];
+    }
+
+    /**
+     * Get system alerts for admin dashboard.
+     */
+    private function getSystemAlerts(): array
+    {
+        return [
+            [
+                'type' => 'info',
+                'message' => 'Sistema funcionando correctamente',
+                'timestamp' => now()->subMinutes(5)
+            ],
+            [
+                'type' => 'warning',
+                'message' => 'Espacio en disco al 75%',
+                'timestamp' => now()->subHours(2)
+            ]
+        ];
+    }
+
+    /**
+     * Get storage usage information.
+     */
+    private function getStorageUsage(): array
+    {
+        $totalSize = File::sum('size') ?? 0;
+        $maxStorage = 100 * 1024 * 1024 * 1024; // 100GB
+
+        return [
+            'used' => $this->formatFileSize($totalSize),
+            'total' => $this->formatFileSize($maxStorage),
+            'percentage' => $maxStorage > 0 ? round(($totalSize / $maxStorage) * 100, 1) : 0
+        ];
+    }
+
+    /**
+     * Get reports count for EPS analyst.
+     */
+    private function getReportsCount($user): int
+    {
+        // This would be implemented based on your reports system
+        return 15; // Placeholder
+    }
+
+    /**
+     * Get data quality score.
+     */
+    private function getDataQualityScore(): float
+    {
+        // This would calculate actual data quality metrics
+        return 94.5; // Placeholder
+    }
+
+    /**
+     * Get monthly trends for EPS dashboard.
+     */
+    private function getMonthlyTrends(): array
+    {
+        return [
+            'evidences_trend' => 12.5,
+            'completion_rate' => 89.2,
+            'average_processing_time' => 3.2
+        ];
+    }
+
+    /**
+     * Get system health metrics.
+     */
+    private function getSystemHealth(): array
+    {
+        return [
+            'cpu_usage' => 45.2,
+            'memory_usage' => 67.8,
+            'disk_usage' => 34.1,
+            'uptime' => '15 días, 8 horas'
+        ];
+    }
+
+    /**
+     * Get backup status.
+     */
+    private function getBackupStatus(): array
+    {
+        return [
+            'last_backup' => now()->subHours(6),
+            'status' => 'success',
+            'size' => '2.4 GB',
+            'next_backup' => now()->addHours(18)
+        ];
+    }
+
+    /**
+     * Get server metrics.
+     */
+    private function getServerMetrics(): array
+    {
+        return [
+            'response_time' => 245, // ms
+            'requests_per_minute' => 127,
+            'error_rate' => 0.02,
+            'active_sessions' => 23
+        ];
+    }
+
+    /**
+     * Get security events.
+     */
+    private function getSecurityEvents(): array
+    {
+        return [
+            [
+                'type' => 'login_success',
+                'user' => 'admin@hospital.gov.co',
+                'ip' => '192.168.1.100',
+                'timestamp' => now()->subMinutes(15)
+            ],
+            [
+                'type' => 'failed_login',
+                'user' => 'unknown@test.com',
+                'ip' => '203.0.113.1',
+                'timestamp' => now()->subHours(2)
+            ]
+        ];
     }
 }

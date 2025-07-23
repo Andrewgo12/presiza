@@ -1,0 +1,516 @@
+/* FILES CREATE - FILE UPLOAD INTERFACE */
+
+/* ===== FILES CREATE CONTAINER ===== */
+.files-create-container {
+    padding: var(--space-6);
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.files-create-header {
+    margin-bottom: var(--space-8);
+    text-align: center;
+}
+
+.files-create-title {
+    font-size: var(--text-4xl);
+    font-weight: 700;
+    color: var(--gray-900);
+    margin-bottom: var(--space-3);
+}
+
+.files-create-subtitle {
+    color: var(--gray-600);
+    font-size: var(--text-lg);
+    line-height: 1.6;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* ===== UPLOAD CONTAINER ===== */
+.files-create-upload-container {
+    background: white;
+    border-radius: var(--radius-2xl);
+    box-shadow: var(--shadow-xl);
+    border: 2px solid var(--gray-200);
+    overflow: hidden;
+    margin-bottom: var(--space-8);
+}
+
+.files-create-upload-header {
+    padding: var(--space-8);
+    border-bottom: 2px solid var(--gray-200);
+    background: linear-gradient(135deg, var(--primary-50) 0%, white 100%);
+    text-align: center;
+    position: relative;
+}
+
+.files-create-upload-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 6px;
+    background: linear-gradient(90deg, var(--primary-500) 0%, var(--primary-600) 100%);
+}
+
+.files-create-upload-icon {
+    width: 4rem;
+    height: 4rem;
+    background: linear-gradient(135deg, var(--primary-500) 0%, var(--primary-600) 100%);
+    border-radius: var(--radius-xl);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: var(--text-2xl);
+    margin: 0 auto var(--space-4);
+    box-shadow: var(--shadow-lg);
+}
+
+.files-create-upload-title {
+    font-size: var(--text-2xl);
+    font-weight: 700;
+    color: var(--gray-900);
+    margin-bottom: var(--space-2);
+}
+
+.files-create-upload-description {
+    color: var(--gray-600);
+    font-size: var(--text-base);
+}
+
+/* ===== DRAG AND DROP ZONE ===== */
+.files-create-dropzone {
+    padding: var(--space-12);
+    margin: var(--space-8);
+    border: 3px dashed var(--gray-300);
+    border-radius: var(--radius-2xl);
+    text-align: center;
+    transition: all var(--transition-normal);
+    cursor: pointer;
+    background: linear-gradient(135deg, var(--gray-50) 0%, white 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+.files-create-dropzone::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.1), transparent);
+    transition: left var(--transition-slow);
+}
+
+.files-create-dropzone:hover::before,
+.files-create-dropzone.dragover::before {
+    left: 100%;
+}
+
+.files-create-dropzone:hover,
+.files-create-dropzone.dragover {
+    border-color: var(--primary-500);
+    background: linear-gradient(135deg, var(--primary-50) 0%, white 100%);
+    transform: scale(1.02);
+}
+
+.files-create-dropzone-icon {
+    width: 6rem;
+    height: 6rem;
+    margin: 0 auto var(--space-6);
+    color: var(--gray-400);
+    transition: all var(--transition-normal);
+}
+
+.files-create-dropzone:hover .files-create-dropzone-icon,
+.files-create-dropzone.dragover .files-create-dropzone-icon {
+    color: var(--primary-500);
+    transform: scale(1.1);
+}
+
+.files-create-dropzone-title {
+    font-size: var(--text-2xl);
+    font-weight: 700;
+    color: var(--gray-700);
+    margin-bottom: var(--space-3);
+}
+
+.files-create-dropzone-subtitle {
+    font-size: var(--text-base);
+    color: var(--gray-500);
+    margin-bottom: var(--space-6);
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.files-create-dropzone-button {
+    background: var(--primary-600);
+    color: white;
+    padding: var(--space-4) var(--space-8);
+    border-radius: var(--radius-xl);
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: all var(--transition-normal);
+    font-size: var(--text-base);
+    box-shadow: var(--shadow-md);
+    margin-bottom: var(--space-4);
+}
+
+.files-create-dropzone-button:hover {
+    background: var(--primary-700);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.files-create-dropzone-formats {
+    font-size: var(--text-sm);
+    color: var(--gray-500);
+    margin-top: var(--space-4);
+}
+
+.files-create-dropzone-formats strong {
+    color: var(--gray-700);
+}
+
+/* ===== UPLOAD PROGRESS ===== */
+.files-create-progress-container {
+    padding: var(--space-6);
+    background: var(--gray-50);
+    border-top: 1px solid var(--gray-200);
+    display: none;
+}
+
+.files-create-progress-container.active {
+    display: block;
+}
+
+.files-create-progress-title {
+    font-weight: 700;
+    color: var(--gray-900);
+    margin-bottom: var(--space-4);
+}
+
+.files-create-progress-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    padding: var(--space-4);
+    background: white;
+    border-radius: var(--radius-lg);
+    margin-bottom: var(--space-3);
+    border: 1px solid var(--gray-200);
+}
+
+.files-create-progress-icon {
+    width: 2.5rem;
+    height: 2.5rem;
+    background: var(--primary-100);
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--primary-600);
+    flex-shrink: 0;
+}
+
+.files-create-progress-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.files-create-progress-name {
+    font-weight: 600;
+    color: var(--gray-900);
+    margin-bottom: var(--space-1);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.files-create-progress-bar-container {
+    width: 100%;
+    height: 8px;
+    background: var(--gray-200);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+    margin-bottom: var(--space-1);
+}
+
+.files-create-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary-500) 0%, var(--primary-600) 100%);
+    border-radius: var(--radius-full);
+    transition: width var(--transition-normal);
+    width: 0%;
+}
+
+.files-create-progress-status {
+    font-size: var(--text-sm);
+    color: var(--gray-500);
+}
+
+.files-create-progress-cancel {
+    background: var(--error-50);
+    color: var(--error-600);
+    border: 1px solid var(--error-200);
+    padding: var(--space-2);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.files-create-progress-cancel:hover {
+    background: var(--error-100);
+    border-color: var(--error-300);
+}
+
+/* ===== UPLOADED FILES LIST ===== */
+.files-create-uploaded-container {
+    background: white;
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-md);
+    border: 2px solid var(--gray-200);
+    margin-bottom: var(--space-8);
+    display: none;
+}
+
+.files-create-uploaded-container.active {
+    display: block;
+}
+
+.files-create-uploaded-header {
+    padding: var(--space-6);
+    border-bottom: 2px solid var(--gray-200);
+    background: linear-gradient(135deg, var(--success-50) 0%, white 100%);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.files-create-uploaded-title {
+    font-size: var(--text-xl);
+    font-weight: 700;
+    color: var(--gray-900);
+}
+
+.files-create-uploaded-count {
+    background: var(--success-100);
+    color: var(--success-700);
+    padding: var(--space-1) var(--space-3);
+    border-radius: var(--radius-full);
+    font-size: var(--text-sm);
+    font-weight: 600;
+}
+
+.files-create-uploaded-body {
+    padding: var(--space-6);
+}
+
+.files-create-uploaded-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: var(--space-4);
+}
+
+.files-create-uploaded-item {
+    background: var(--gray-50);
+    border: 2px solid var(--gray-200);
+    border-radius: var(--radius-lg);
+    padding: var(--space-4);
+    text-align: center;
+    transition: all var(--transition-normal);
+    position: relative;
+}
+
+.files-create-uploaded-item:hover {
+    border-color: var(--primary-300);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.files-create-uploaded-item.success {
+    border-color: var(--success-300);
+    background: var(--success-50);
+}
+
+.files-create-uploaded-item.error {
+    border-color: var(--error-300);
+    background: var(--error-50);
+}
+
+.files-create-uploaded-status {
+    position: absolute;
+    top: var(--space-2);
+    right: var(--space-2);
+    width: 1rem;
+    height: 1rem;
+    border-radius: var(--radius-full);
+}
+
+.files-create-uploaded-status.success {
+    background: var(--success-500);
+}
+
+.files-create-uploaded-status.error {
+    background: var(--error-500);
+}
+
+.files-create-uploaded-icon {
+    width: 3rem;
+    height: 3rem;
+    margin: 0 auto var(--space-3);
+    color: var(--primary-500);
+}
+
+.files-create-uploaded-name {
+    font-weight: 600;
+    color: var(--gray-900);
+    margin-bottom: var(--space-2);
+    font-size: var(--text-sm);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.files-create-uploaded-size {
+    color: var(--gray-500);
+    font-size: var(--text-xs);
+    margin-bottom: var(--space-3);
+}
+
+.files-create-uploaded-actions {
+    display: flex;
+    gap: var(--space-2);
+    justify-content: center;
+}
+
+.files-create-uploaded-action {
+    padding: var(--space-1) var(--space-2);
+    border: 1px solid var(--gray-300);
+    border-radius: var(--radius-md);
+    background: white;
+    color: var(--gray-600);
+    font-size: var(--text-xs);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.files-create-uploaded-action:hover {
+    background: var(--primary-50);
+    border-color: var(--primary-300);
+    color: var(--primary-700);
+}
+
+.files-create-uploaded-action.danger:hover {
+    background: var(--error-50);
+    border-color: var(--error-300);
+    color: var(--error-700);
+}
+
+/* ===== FORM FOOTER ===== */
+.files-create-footer {
+    background: white;
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-md);
+    border: 2px solid var(--gray-200);
+    padding: var(--space-6);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--space-4);
+}
+
+.files-create-footer-info {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    color: var(--gray-600);
+    font-size: var(--text-sm);
+}
+
+.files-create-footer-actions {
+    display: flex;
+    gap: var(--space-4);
+}
+
+.files-create-btn {
+    padding: var(--space-3) var(--space-6);
+    border-radius: var(--radius-xl);
+    font-weight: 600;
+    font-size: var(--text-base);
+    cursor: pointer;
+    transition: all var(--transition-normal);
+    border: 2px solid transparent;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.files-create-btn-primary {
+    background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-700) 100%);
+    color: white;
+    box-shadow: var(--shadow-md);
+}
+
+.files-create-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.files-create-btn-secondary {
+    background: white;
+    color: var(--gray-600);
+    border-color: var(--gray-300);
+}
+
+.files-create-btn-secondary:hover {
+    background: var(--gray-50);
+    border-color: var(--gray-400);
+}
+
+/* ===== RESPONSIVE FILES CREATE ===== */
+@media (max-width: 768px) {
+    .files-create-container {
+        padding: var(--space-4);
+    }
+    
+    .files-create-title {
+        font-size: var(--text-3xl);
+    }
+    
+    .files-create-dropzone {
+        padding: var(--space-8);
+        margin: var(--space-6);
+    }
+    
+    .files-create-dropzone-icon {
+        width: 4rem;
+        height: 4rem;
+    }
+    
+    .files-create-dropzone-title {
+        font-size: var(--text-xl);
+    }
+    
+    .files-create-uploaded-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    }
+    
+    .files-create-footer {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .files-create-footer-actions {
+        flex-direction: column;
+    }
+}

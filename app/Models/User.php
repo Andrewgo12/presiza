@@ -14,6 +14,14 @@ class User extends Authenticatable implements MustVerifyEmail
     use HasApiTokens, HasFactory, Notifiable, SoftDeletes;
 
     /**
+     * User roles constants for our medical system
+     */
+    const ROLE_ADMIN = 'admin';
+    const ROLE_MEDICAL = 'medical';
+    const ROLE_EPS = 'eps';
+    const ROLE_SYSTEMS = 'systems';
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var array<int, string>
@@ -78,7 +86,31 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     public function isAdmin(): bool
     {
-        return $this->role === 'admin';
+        return $this->role === self::ROLE_ADMIN;
+    }
+
+    /**
+     * Check if user is medical staff.
+     */
+    public function isMedical(): bool
+    {
+        return $this->role === self::ROLE_MEDICAL;
+    }
+
+    /**
+     * Check if user is EPS analyst.
+     */
+    public function isEPS(): bool
+    {
+        return $this->role === self::ROLE_EPS;
+    }
+
+    /**
+     * Check if user is systems administrator.
+     */
+    public function isSystems(): bool
+    {
+        return $this->role === self::ROLE_SYSTEMS;
     }
 
     /**
@@ -319,12 +351,72 @@ class User extends Authenticatable implements MustVerifyEmail
     public function getRoleDisplayNameAttribute(): string
     {
         return match ($this->role) {
-            'admin' => 'Administrador',
+            self::ROLE_ADMIN => 'Administrador',
+            self::ROLE_MEDICAL => 'Médico',
+            self::ROLE_EPS => 'Analista EPS',
+            self::ROLE_SYSTEMS => 'Sistemas',
             'analyst' => 'Analista',
             'investigator' => 'Investigador',
             'user' => 'Usuario',
             default => 'Usuario',
         };
+    }
+
+    /**
+     * Get role color scheme for our medical system
+     */
+    public function getRoleColorScheme(): array
+    {
+        return match($this->role) {
+            self::ROLE_ADMIN => [
+                'primary' => '#dc2626',
+                'secondary' => '#ef4444',
+                'light' => '#fef2f2',
+                'lighter' => '#fee2e2',
+                'name' => 'admin'
+            ],
+            self::ROLE_MEDICAL => [
+                'primary' => '#2563eb',
+                'secondary' => '#3b82f6',
+                'light' => '#eff6ff',
+                'lighter' => '#dbeafe',
+                'name' => 'medical'
+            ],
+            self::ROLE_EPS => [
+                'primary' => '#059669',
+                'secondary' => '#10b981',
+                'light' => '#f0fdf4',
+                'lighter' => '#dcfce7',
+                'name' => 'eps'
+            ],
+            self::ROLE_SYSTEMS => [
+                'primary' => '#ea580c',
+                'secondary' => '#f97316',
+                'light' => '#fff7ed',
+                'lighter' => '#fed7aa',
+                'name' => 'systems'
+            ],
+            default => [
+                'primary' => '#6b7280',
+                'secondary' => '#9ca3af',
+                'light' => '#f9fafb',
+                'lighter' => '#f3f4f6',
+                'name' => 'default'
+            ]
+        };
+    }
+
+    /**
+     * Get all available roles for our medical system
+     */
+    public static function getAvailableRoles(): array
+    {
+        return [
+            self::ROLE_ADMIN => 'Administrador',
+            self::ROLE_MEDICAL => 'Médico',
+            self::ROLE_EPS => 'Analista EPS',
+            self::ROLE_SYSTEMS => 'Sistemas',
+        ];
     }
 
     /**
@@ -375,4 +467,5 @@ class User extends Authenticatable implements MustVerifyEmail
             'pending_evidences_count' => $this->assignedEvidences()->where('status', 'pending')->count(),
         ];
     }
+
 }

@@ -13,6 +13,23 @@
     
     <!-- Styles -->
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/navigation.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/dashboard.css') }}" rel="stylesheet">
+
+    {{-- Role-specific CSS --}}
+    @if(isset($roleCss) && !empty($roleCss))
+        @foreach($roleCss as $cssFile)
+            <link href="{{ asset('css/' . $cssFile) }}" rel="stylesheet">
+        @endforeach
+    @endif
+
+    {{-- View-specific CSS --}}
+    @if(isset($viewCss) && !empty($viewCss))
+        @foreach($viewCss as $cssFile)
+            <link href="{{ asset('css/' . $cssFile) }}" rel="stylesheet">
+        @endforeach
+    @endif
+
     <script src="{{ asset('js/app.js') }}" defer></script>
     
     <!-- Alpine.js -->
@@ -23,7 +40,7 @@
     
     @stack('styles')
 </head>
-<body class="h-full font-sans antialiased" x-data="{ sidebarOpen: false }">
+<body class="h-full font-sans antialiased {{ $roleClass ?? '' }}" x-data="{ sidebarOpen: false }">
     <div class="min-h-full">
         <!-- Sidebar móvil -->
         <div x-show="sidebarOpen" class="relative z-50 lg:hidden" x-cloak>

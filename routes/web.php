@@ -145,6 +145,15 @@ Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.'
     // Analytics
     Route::get('analytics', [AdminController::class, 'analytics'])->name('analytics');
 
+    // System Backups
+    Route::get('backups', [AdminController::class, 'backups'])->name('backups');
+    Route::post('backups/create', [AdminController::class, 'createBackup'])->name('backups.create');
+    Route::delete('backups/{backup}', [AdminController::class, 'deleteBackup'])->name('backups.delete');
+
+    // System Logs
+    Route::get('logs', [AdminController::class, 'logs'])->name('logs');
+    Route::delete('logs/clear', [AdminController::class, 'clearLogs'])->name('logs.clear');
+
     // Configuraciones del sistema
     Route::get('settings', [AdminController::class, 'settings'])->name('settings');
     Route::patch('settings', [AdminSettingsController::class, 'update'])->name('settings.update');

@@ -13,6 +13,7 @@
     
     <!-- Styles -->
     <link href="<?php echo e(asset('css/app.css')); ?>" rel="stylesheet">
+    <link href="<?php echo e(asset('css/auth.css')); ?>" rel="stylesheet">
     <script src="<?php echo e(asset('js/app.js')); ?>" defer></script>
     
     <!-- Alpine.js -->

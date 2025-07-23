@@ -1,56 +1,72 @@
-<!-- Sidebar -->
-<div class="flex grow flex-col gap-y-5 overflow-y-auto bg-gray-900 px-6 pb-4">
+<!-- Role-Based Sidebar -->
+<div class="flex grow flex-col gap-y-5 overflow-y-auto sidebar-container px-6 pb-4">
     <div class="flex h-16 shrink-0 items-center">
-        <img class="h-8 w-auto" src="{{ asset('images/logo.svg') }}" alt="{{ config('app.name') }}">
-        <span class="ml-3 text-white font-semibold text-lg">Evidencias</span>
+        <div class="sidebar-logo-icon">
+            <svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.623 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
+            </svg>
+        </div>
+        <span class="sidebar-logo-text">EvidenceManager</span>
+        @if(auth()->check())
+            <div class="sidebar-role-badge {{ auth()->user()->getRoleColorScheme()['name'] }}">
+                {{ strtoupper(auth()->user()->role) }}
+            </div>
+        @endif
     </div>
     
-    <nav class="flex flex-1 flex-col">
-        <ul role="list" class="flex flex-1 flex-col gap-y-7">
-            <li>
-                <ul role="list" class="-mx-2 space-y-1">
+    <nav class="sidebar-nav">
+        <ul class="sidebar-nav-list">
+            <li class="sidebar-nav-section">
+                <div class="sidebar-nav-section-title">Principal</div>
+                <ul class="sidebar-nav-items">
                     <!-- Dashboard -->
                     <li>
-                        <a href="{{ route('dashboard') }}" 
-                           class="group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold {{ request()->routeIs('dashboard') ? 'bg-gray-800 text-white' : 'text-gray-400 hover:text-white hover:bg-gray-800' }}">
-                            <svg class="h-6 w-6 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
-                            </svg>
-                            Dashboard
+                        <a href="{{ route('dashboard') }}"
+                           class="sidebar-nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
+                            <div class="sidebar-nav-icon">
+                                <svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
+                                </svg>
+                            </div>
+                            <span class="sidebar-nav-text">Dashboard</span>
                         </a>
                     </li>
 
-                    <!-- Archivos -->
+                    <!-- Files -->
                     <li>
-                        <a href="{{ route('files.index') }}" 
-                           class="group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold {{ request()->routeIs('files.*') ? 'bg-gray-800 text-white' : 'text-gray-400 hover:text-white hover:bg-gray-800' }}">
-                            <svg class="h-6 w-6 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
-                            </svg>
-                            Archivos
+                        <a href="{{ route('files.index') }}"
+                           class="sidebar-nav-link {{ request()->routeIs('files.*') ? 'active' : '' }}">
+                            <div class="sidebar-nav-icon">
+                                <svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                                </svg>
+                            </div>
+                            <span class="sidebar-nav-text">Archivos</span>
                             @if(auth()->user()->files()->where('created_at', '>=', now()->subDay())->count() > 0)
-                                <span class="ml-auto w-5 h-5 text-xs bg-blue-600 text-white rounded-full flex items-center justify-center">
+                                <span class="sidebar-nav-badge">
                                     {{ auth()->user()->files()->where('created_at', '>=', now()->subDay())->count() }}
                                 </span>
                             @endif
                         </a>
                     </li>
 
-                    <!-- Evidencias -->
+                    <!-- Evidences -->
                     <li>
-                        <a href="{{ route('evidences.index') }}" 
-                           class="group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold {{ request()->routeIs('evidences.*') ? 'bg-gray-800 text-white' : 'text-gray-400 hover:text-white hover:bg-gray-800' }}">
-                            <svg class="h-6 w-6 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.623 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
-                            </svg>
-                            Evidencias
+                        <a href="{{ route('evidences.index') }}"
+                           class="sidebar-nav-link {{ request()->routeIs('evidences.*') ? 'active' : '' }}">
+                            <div class="sidebar-nav-icon">
+                                <svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.623 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
+                                </svg>
+                            </div>
+                            <span class="sidebar-nav-text">Evidencias</span>
                             @php
-                                $pendingEvidences = auth()->user()->role === 'admin' 
+                                $pendingEvidences = auth()->user()->role === 'admin'
                                     ? \App\Models\Evidence::where('status', 'pending')->count()
                                     : auth()->user()->assignedEvidences()->where('status', 'pending')->count();
                             @endphp
                             @if($pendingEvidences > 0)
-                                <span class="ml-auto w-5 h-5 text-xs bg-red-600 text-white rounded-full flex items-center justify-center">
+                                <span class="sidebar-nav-badge urgent">
                                     {{ $pendingEvidences }}
                                 </span>
                             @endif

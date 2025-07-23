@@ -4,86 +4,92 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    
+
     <title>Sistema de Gestión de Evidencias - Hospital</title>
-    
+
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
-    
-    <!-- Scripts -->
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+    <!-- CSS Framework -->
+    @vite(['resources/css/app.css', 'resources/css/welcome.css', 'resources/js/app.js'])
+
+    <!-- Additional Styles for Enhanced UI -->
+    <style>
+        :root {
+            --primary-50: #eff6ff;
+            --primary-100: #dbeafe;
+            --primary-500: #3b82f6;
+            --primary-600: #2563eb;
+            --primary-700: #1d4ed8;
+        }
+    </style>
 </head>
-<body class="h-full bg-gray-50">
+<body class="welcome-container">
     <div class="min-h-full">
-        <!-- Navigation -->
-        <nav class="bg-white shadow-sm border-b border-gray-200">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex justify-between h-16">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0 flex items-center">
-                            <svg class="h-8 w-8 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.623 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
+        <!-- Enhanced Navigation with Medical Theme -->
+        <header class="welcome-header">
+            <nav class="welcome-nav">
+                <div class="welcome-logo">
+                    <div class="welcome-logo-icon">
+                        <svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.623 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
+                        </svg>
+                    </div>
+                    <span>EvidenceManager Pro</span>
+                </div>
+                <div class="welcome-nav-links">
+                    @guest
+                        <a href="#features" class="welcome-nav-link">Características</a>
+                        <a href="#demo" class="welcome-nav-link">Demo</a>
+                        <a href="{{ route('login') }}" class="welcome-nav-link">Iniciar Sesión</a>
+                        <a href="{{ route('login') }}" class="welcome-login-btn">
+                            <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
                             </svg>
-                            <span class="ml-2 text-xl font-bold text-gray-900">EvidenceManager</span>
-                        </div>
-                    </div>
-                    <div class="flex items-center space-x-4">
-                        @guest
-                            <a href="{{ route('login') }}" class="text-gray-500 hover:text-gray-700 px-3 py-2 rounded-md text-sm font-medium">
-                                Iniciar Sesión
-                            </a>
-                            <a href="{{ route('register') }}" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md text-sm font-medium">
-                                Registrarse
-                            </a>
-                        @else
-                            <a href="{{ route('dashboard') }}" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md text-sm font-medium">
-                                Dashboard
-                            </a>
-                        @endguest
-                    </div>
+                            Acceder al Sistema
+                        </a>
+                    @else
+                        <a href="{{ route('dashboard') }}" class="welcome-login-btn">
+                            <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                            </svg>
+                            Dashboard
+                        </a>
+                    @endguest
                 </div>
-            </div>
-        </nav>
+            </nav>
+        </header>
 
-        <!-- Hero Section -->
-        <div class="relative bg-white overflow-hidden">
-            <div class="max-w-7xl mx-auto">
-                <div class="relative z-10 pb-8 bg-white sm:pb-16 md:pb-20 lg:max-w-2xl lg:w-full lg:pb-28 xl:pb-32">
-                    <svg class="hidden lg:block absolute right-0 inset-y-0 h-full w-48 text-white transform translate-x-1/2" fill="currentColor" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-                        <polygon points="50,0 100,0 50,100 0,100" />
+        <!-- Enhanced Hero Section -->
+        <section class="welcome-hero">
+            <div class="welcome-hero-badge">
+                🏥 Certificado para Instituciones de Salud
+            </div>
+            <h1 class="welcome-hero-title">
+                <span class="block">Sistema de Gestión</span>
+                <span class="block highlight">de Evidencias Médicas</span>
+            </h1>
+            <p class="welcome-hero-subtitle">
+                Plataforma profesional diseñada específicamente para hospitales y centros médicos.
+                Gestión segura de evidencias con estándares de grado bancario, trazabilidad completa
+                y cumplimiento normativo para el sector salud.
+            </p>
+            <div class="welcome-hero-actions">
+                <a href="{{ route('login') }}" class="welcome-hero-btn-primary">
+                    <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
                     </svg>
-
-                    <main class="mt-10 mx-auto max-w-7xl px-4 sm:mt-12 sm:px-6 md:mt-16 lg:mt-20 lg:px-8 xl:mt-28">
-                        <div class="sm:text-center lg:text-left">
-                            <h1 class="text-4xl tracking-tight font-extrabold text-gray-900 sm:text-5xl md:text-6xl">
-                                <span class="block xl:inline">Sistema de Gestión</span>
-                                <span class="block text-indigo-600 xl:inline">de Evidencias</span>
-                            </h1>
-                            <p class="mt-3 text-base text-gray-500 sm:mt-5 sm:text-lg sm:max-w-xl sm:mx-auto md:mt-5 md:text-xl lg:mx-0">
-                                Plataforma profesional para la gestión, seguimiento y análisis de evidencias médicas y administrativas. 
-                                Diseñada con estándares de seguridad bancaria para garantizar la integridad y confidencialidad de la información.
-                            </p>
-                            <div class="mt-5 sm:mt-8 sm:flex sm:justify-center lg:justify-start">
-                                <div class="rounded-md shadow">
-                                    <a href="{{ route('login') }}" class="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 md:py-4 md:text-lg md:px-10">
-                                        Acceder al Sistema
-                                    </a>
-                                </div>
-                                <div class="mt-3 sm:mt-0 sm:ml-3">
-                                    <a href="#demo" class="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 md:py-4 md:text-lg md:px-10">
-                                        Ver Demo
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    </main>
-                </div>
+                    Acceder al Sistema
+                </a>
+                <a href="#demo" class="welcome-hero-btn-secondary">
+                    <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Ver Demostración
+                </a>
             </div>
-            <div class="lg:absolute lg:inset-y-0 lg:right-0 lg:w-1/2">
-                <img class="h-56 w-full object-cover sm:h-72 md:h-96 lg:w-full lg:h-full" src="https://images.unsplash.com/photo-1551434678-e076c223a692?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80" alt="Sistema de gestión de evidencias">
-            </div>
-        </div>
+        </section>
 
         <!-- Features Section -->
         <div class="py-12 bg-white">
@@ -173,93 +179,121 @@
                     </p>
                 </div>
 
-                <div class="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-                    <!-- Admin -->
-                    <div class="bg-white overflow-hidden shadow rounded-lg">
-                        <div class="px-4 py-5 sm:p-6">
-                            <div class="flex items-center">
-                                <div class="flex-shrink-0">
-                                    <div class="h-8 w-8 bg-red-500 rounded-full flex items-center justify-center">
-                                        <svg class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975m11.963 0a9 9 0 10-11.963 0m11.963 0A8.966 8.966 0 0112 21a8.966 8.966 0 01-5.982-2.275M15 9.75a3 3 0 11-6 0 3 3 0 016 0z" />
-                                        </svg>
-                                    </div>
+                <div class="welcome-demo-grid">
+                    <!-- Admin Role - Red Theme -->
+                    <div class="welcome-demo-card admin">
+                        <div class="welcome-demo-card-header">
+                            <div class="welcome-demo-card-icon admin">
+                                <svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975m11.963 0a9 9 0 10-11.963 0m11.963 0A8.966 8.966 0 0112 21a8.966 8.966 0 01-5.982-2.275M15 9.75a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                            </div>
+                            <div class="welcome-demo-card-badge admin">ADMIN</div>
+                        </div>
+                        <div class="welcome-demo-card-body">
+                            <h3 class="welcome-demo-card-title">Administrador</h3>
+                            <p class="welcome-demo-card-description">Control total del sistema, gestión de usuarios y configuraciones</p>
+                            <div class="welcome-demo-card-credentials">
+                                <div class="welcome-demo-credential">
+                                    <span class="welcome-demo-credential-label">Email:</span>
+                                    <span class="welcome-demo-credential-value">admin@hospital.gov.co</span>
                                 </div>
-                                <div class="ml-5 w-0 flex-1">
-                                    <dl>
-                                        <dt class="text-sm font-medium text-gray-500 truncate">Administrador</dt>
-                                        <dd class="text-lg font-medium text-gray-900">admin@hospital.gov.co</dd>
-                                        <dd class="text-sm text-gray-500">password</dd>
-                                    </dl>
+                                <div class="welcome-demo-credential">
+                                    <span class="welcome-demo-credential-label">Password:</span>
+                                    <span class="welcome-demo-credential-value">password</span>
                                 </div>
                             </div>
                         </div>
-                    </div>
-
-                    <!-- Investigator -->
-                    <div class="bg-white overflow-hidden shadow rounded-lg">
-                        <div class="px-4 py-5 sm:p-6">
-                            <div class="flex items-center">
-                                <div class="flex-shrink-0">
-                                    <div class="h-8 w-8 bg-blue-500 rounded-full flex items-center justify-center">
-                                        <svg class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-                                        </svg>
-                                    </div>
-                                </div>
-                                <div class="ml-5 w-0 flex-1">
-                                    <dl>
-                                        <dt class="text-sm font-medium text-gray-500 truncate">Médico Investigador</dt>
-                                        <dd class="text-lg font-medium text-gray-900">medico@hospital.gov.co</dd>
-                                        <dd class="text-sm text-gray-500">password</dd>
-                                    </dl>
-                                </div>
-                            </div>
+                        <div class="welcome-demo-card-footer">
+                            <a href="{{ route('login') }}" class="welcome-demo-card-btn admin">Probar Rol</a>
                         </div>
                     </div>
 
-                    <!-- Analyst -->
-                    <div class="bg-white overflow-hidden shadow rounded-lg">
-                        <div class="px-4 py-5 sm:p-6">
-                            <div class="flex items-center">
-                                <div class="flex-shrink-0">
-                                    <div class="h-8 w-8 bg-green-500 rounded-full flex items-center justify-center">
-                                        <svg class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
-                                        </svg>
-                                    </div>
+                    <!-- Medical Role - Blue Theme -->
+                    <div class="welcome-demo-card medical">
+                        <div class="welcome-demo-card-header">
+                            <div class="welcome-demo-card-icon medical">
+                                <svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                                </svg>
+                            </div>
+                            <div class="welcome-demo-card-badge medical">MÉDICO</div>
+                        </div>
+                        <div class="welcome-demo-card-body">
+                            <h3 class="welcome-demo-card-title">Médico Investigador</h3>
+                            <p class="welcome-demo-card-description">Gestión de evidencias médicas y evaluación de casos clínicos</p>
+                            <div class="welcome-demo-card-credentials">
+                                <div class="welcome-demo-credential">
+                                    <span class="welcome-demo-credential-label">Email:</span>
+                                    <span class="welcome-demo-credential-value">medico@hospital.gov.co</span>
                                 </div>
-                                <div class="ml-5 w-0 flex-1">
-                                    <dl>
-                                        <dt class="text-sm font-medium text-gray-500 truncate">Analista EPS</dt>
-                                        <dd class="text-lg font-medium text-gray-900">eps@hospital.gov.co</dd>
-                                        <dd class="text-sm text-gray-500">password</dd>
-                                    </dl>
+                                <div class="welcome-demo-credential">
+                                    <span class="welcome-demo-credential-label">Password:</span>
+                                    <span class="welcome-demo-credential-value">password</span>
                                 </div>
                             </div>
                         </div>
+                        <div class="welcome-demo-card-footer">
+                            <a href="{{ route('login') }}" class="welcome-demo-card-btn medical">Probar Rol</a>
+                        </div>
                     </div>
 
-                    <!-- System -->
-                    <div class="bg-white overflow-hidden shadow rounded-lg">
-                        <div class="px-4 py-5 sm:p-6">
-                            <div class="flex items-center">
-                                <div class="flex-shrink-0">
-                                    <div class="h-8 w-8 bg-purple-500 rounded-full flex items-center justify-center">
-                                        <svg class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z" />
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                        </svg>
-                                    </div>
+                    <!-- EPS/Analyst Role - Green Theme -->
+                    <div class="welcome-demo-card eps">
+                        <div class="welcome-demo-card-header">
+                            <div class="welcome-demo-card-icon eps">
+                                <svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
+                                </svg>
+                            </div>
+                            <div class="welcome-demo-card-badge eps">EPS</div>
+                        </div>
+                        <div class="welcome-demo-card-body">
+                            <h3 class="welcome-demo-card-title">Analista EPS</h3>
+                            <p class="welcome-demo-card-description">Análisis de datos, reportes y seguimiento de indicadores</p>
+                            <div class="welcome-demo-card-credentials">
+                                <div class="welcome-demo-credential">
+                                    <span class="welcome-demo-credential-label">Email:</span>
+                                    <span class="welcome-demo-credential-value">eps@hospital.gov.co</span>
                                 </div>
-                                <div class="ml-5 w-0 flex-1">
-                                    <dl>
-                                        <dt class="text-sm font-medium text-gray-500 truncate">Administrador Sistema</dt>
-                                        <dd class="text-lg font-medium text-gray-900">sistema@hospital.gov.co</dd>
-                                        <dd class="text-sm text-gray-500">password</dd>
-                                    </dl>
+                                <div class="welcome-demo-credential">
+                                    <span class="welcome-demo-credential-label">Password:</span>
+                                    <span class="welcome-demo-credential-value">password</span>
                                 </div>
                             </div>
+                        </div>
+                        <div class="welcome-demo-card-footer">
+                            <a href="{{ route('login') }}" class="welcome-demo-card-btn eps">Probar Rol</a>
+                        </div>
+                    </div>
+
+                    <!-- Systems Role - Orange Theme -->
+                    <div class="welcome-demo-card systems">
+                        <div class="welcome-demo-card-header">
+                            <div class="welcome-demo-card-icon systems">
+                                <svg fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                            </div>
+                            <div class="welcome-demo-card-badge systems">SISTEMAS</div>
+                        </div>
+                        <div class="welcome-demo-card-body">
+                            <h3 class="welcome-demo-card-title">Administrador de Sistemas</h3>
+                            <p class="welcome-demo-card-description">Monitoreo técnico, respaldos y mantenimiento del sistema</p>
+                            <div class="welcome-demo-card-credentials">
+                                <div class="welcome-demo-credential">
+                                    <span class="welcome-demo-credential-label">Email:</span>
+                                    <span class="welcome-demo-credential-value">sistemas@hospital.gov.co</span>
+                                </div>
+                                <div class="welcome-demo-credential">
+                                    <span class="welcome-demo-credential-label">Password:</span>
+                                    <span class="welcome-demo-credential-value">password</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="welcome-demo-card-footer">
+                            <a href="{{ route('login') }}" class="welcome-demo-card-btn systems">Probar Rol</a>
                         </div>
                     </div>
                 </div>
